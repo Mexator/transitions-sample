@@ -49,7 +49,7 @@ object Dictionary {
         "ХОЛОД", "УЛИЦА", "ВОЛНА", "ГРОЗА", "СПИНА",
     )
 
-    private val knownWords = articles.map { it.word }.toSet() + extraWords
+    private val knownWords = ALL_WORDS + articles.map { it.word } + extraWords
 
     fun isValid(word: String): Boolean = word.uppercase() in knownWords
 
