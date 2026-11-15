@@ -3,11 +3,16 @@ package ru.mexator.slovo
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.Window
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityOptionsCompat
 import androidx.fragment.app.FragmentManager
 import ru.mexator.core.dict.SlovarContract
 import ru.mexator.slovo.databinding.ActivityMainBinding
+import ru.mexator.slovo.demo.DemoConfig
+import ru.mexator.slovo.demo.DemoLayer
 
 /**
  * Тонкая оболочка (Пример 5): единственный fragment_container, в котором всегда
@@ -32,6 +37,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Пример 6: window-переходы для cross-app shared element. Фича нужна
+        // ОБОИМ окнам — иначе options-бандл молча не оживёт (как и голый add
+        // у фрагментов, это не ошибка — просто перехода нет).
+        if (!window.hasFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)) {
+            window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -77,15 +88,31 @@ class MainActivity : AppCompatActivity() {
         gameFragment().startGame()
     }
 
-    /** Пример 6 (M3): shared element across the process boundary into «Словарь». */
-    fun openSlovar(word: String) {
+    /**
+     * Пример 6: shared element через границу процесса в «Словарь». Источник —
+     * ЯВНАЯ пара (view, transitionName) в ActivityOptions: в отличие от
+     * фрагментов, где фреймворк выводит пару из диффа транзакции, здесь мы
+     * руками указываем, что летит. NEW_TASK — своя задача, две карточки в
+     * Recents: иллюзия совсем чужого приложения. Слой CROSS_APP off (или нет
+     * view-источника) — деградация: обычное открытие без options-бандла.
+     */
+    fun openSlovar(word: String, sharedView: View?) {
         val intent = Intent()
             .setClassName(SlovarContract.PACKAGE, SlovarContract.ACTIVITY)
             .putExtra(SlovarContract.EXTRA_WORD, word)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
-            // M3 (Пример 6): ActivityOptions.makeSceneTransitionAnimation с шапкой
-            // WinFragment как shared element — рядом ряд «клеток» улетит в «Словарь».
-            startActivity(intent)
+            val options =
+                if (sharedView != null && DemoConfig.isEnabled(DemoLayer.CROSS_APP)) {
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        this,
+                        sharedView,
+                        SlovarContract.TRANSITION_WORD,
+                    ).toBundle()
+                } else {
+                    null
+                }
+            startActivity(intent, options)
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(this, R.string.install_slovar, Toast.LENGTH_SHORT).show()
         }

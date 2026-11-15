@@ -392,7 +392,9 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     }
 
     private fun openSlovar() {
-        (activity as? MainActivity)?.openSlovar(controller.state.target)
+        // Путь слоя FRAGMENT OFF: источник cross-app перелёта — чип финала
+        // (то же имя "word", та же геометрия ряда).
+        (activity as? MainActivity)?.openSlovar(controller.state.target, binding.wordChip)
     }
 
     private fun Transition.demoDuration(base: Long): Transition = apply {

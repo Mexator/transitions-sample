@@ -74,7 +74,7 @@ class WinFragment : Fragment(R.layout.fragment_win) {
 
         binding.btnWinMeaning.setOnClickListener { openArticle() }
         binding.btnWinSlovar.setOnClickListener {
-            (activity as? MainActivity)?.openSlovar(word)
+            (activity as? MainActivity)?.openSlovar(word, binding.winWordRow)
         }
         binding.btnWinRestart.setOnClickListener {
             (activity as? MainActivity)?.onPlayAgain()
