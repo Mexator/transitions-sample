@@ -16,6 +16,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import dev.anton.core.dict.Dictionary
 import dev.anton.core.dict.SlovarContract
+import dev.anton.slovo.demo.DemoConfig
 import dev.anton.slovo.databinding.ActivityMainBinding
 import dev.anton.slovo.game.GameController
 import dev.anton.slovo.game.GameStatus
@@ -27,6 +28,12 @@ import dev.anton.slovo.game.SubmitResult
  * Every animation lands in later milestones on top of this render(state) loop.
  */
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_DEMO_COMMAND = "demo.command"
+        const val COMMAND_START = "start"
+        const val COMMAND_SURRENDER = "surrender"
+    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var controller: GameController
@@ -60,10 +67,27 @@ class MainActivity : AppCompatActivity() {
         buildBoard()
         buildKeyboard()
         render(controller.state)
+        handleDemoCommand(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDemoCommand(intent)
+    }
+
+    /** Sent by the debug demo panel: state jumps for recording. */
+    private fun handleDemoCommand(intent: Intent?) {
+        when (intent?.getStringExtra(EXTRA_DEMO_COMMAND)) {
+            COMMAND_START -> startGame()
+            COMMAND_SURRENDER -> {
+                if (binding.gameScene.visibility != View.VISIBLE) startGame()
+                controller.surrender()
+            }
+        }
     }
 
     private fun startGame() {
-        controller.startNewGame()
+        controller.startNewGame(DemoConfig.wordOverride)
         binding.startScene.visibility = View.GONE
         binding.gameScene.visibility = View.VISIBLE
         binding.finale.visibility = View.GONE

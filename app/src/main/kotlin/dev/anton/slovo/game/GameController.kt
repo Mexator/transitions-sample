@@ -57,5 +57,19 @@ class GameController(
         return SubmitResult.Accepted
     }
 
+    /** Demo-panel shortcut: fill all attempts with losing words to reach the finale instantly. */
+    fun surrender() {
+        if (state.status != GameStatus.PLAYING) return
+        val losers = listOf("КОШКА", "ЗЕМЛЯ", "ГОРОД", "ВОЛНА", "ГРОЗА", "СПИНА", "МЫШКА", "КНИГА")
+        val rows = state.rows.toMutableList()
+        for (word in losers) {
+            if (rows.size >= state.maxAttempts) break
+            if (word == state.target || !dictionary.isValid(word)) continue
+            rows += SubmittedRow(word, GuessEvaluator.score(word, state.target))
+        }
+        state = state.copy(rows = rows, currentInput = "")
+        dispatch()
+    }
+
     private fun dispatch() = onStateChanged(state)
 }

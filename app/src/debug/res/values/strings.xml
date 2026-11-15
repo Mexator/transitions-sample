@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="demo_panel_name">Демо-панель (Слово)</string>
+    <string name="layers">Слои анимаций</string>
+    <string name="layer_color">Пример 1 — цвет букв</string>
+    <string name="layer_container">Пример 2 — «Играть» → поле</string>
+    <string name="layer_visibility">Пример 3 — появление/исчезновение</string>
+    <string name="layer_cancel">Пример 4 — отмена (подсказка)</string>
+    <string name="layer_fragment">Пример 5 — фрагмент</string>
+    <string name="layer_cross_app">Пример 6 — Словарь</string>
+    <string name="speed">Длительность</string>
+    <string name="word">Слово</string>
+    <string name="word_of_the_day">По дате</string>
+    <string name="start_game">Начать игру со словом</string>
+    <string name="surrender">Сдаться (в финал)</string>
+    <string name="open_game">Открыть игру</string>
+</resources>
