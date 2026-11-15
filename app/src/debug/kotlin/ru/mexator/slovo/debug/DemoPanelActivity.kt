@@ -67,9 +67,13 @@ class DemoPanelActivity : AppCompatActivity() {
     }
 
     private fun sendDemoCommand(command: String) {
-        val game = packageManager.getLaunchIntentForPackage("ru.mexator.slovo")
-            ?: Intent(this, MainActivity::class.java)
-        game.putExtra(MainActivity.EXTRA_DEMO_COMMAND, command)
+        // Явный интент + CLEAR_TOP|SINGLE_TOP: если игра уже жива под панелью,
+        // команда доедет до неё через onNewIntent. Launch-intent лишь вывозит
+        // задачу вперёд и молча теряет extra — на записи это стоило пропавшего
+        // state-jump'а.
+        val game = Intent(this, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(MainActivity.EXTRA_DEMO_COMMAND, command)
         startActivity(game)
     }
 
