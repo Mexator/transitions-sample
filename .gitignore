@@ -8,14 +8,11 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
-/app/build
-/app-slovar/build
-/core-dict/build
+**/build/
 
 # Claude Code context — local only (device serial, local paths); repo is public
 /CLAUDE.md
