@@ -85,7 +85,7 @@ class DemoTransitionsTest {
         assertEquals(2, fades.size)
         val faded = fades.flatMap { it.targetIds }.toSet()
         assertEquals(
-            setOf(R.id.title, R.id.subtitle, R.id.play_button, R.id.game_status, R.id.hint_button),
+            setOf(R.id.title, R.id.subtitle, R.id.play_button, R.id.game_status, R.id.hint_toggle),
             faded,
         )
         // The shared elements must stay owned by the bounds pair alone — a fade

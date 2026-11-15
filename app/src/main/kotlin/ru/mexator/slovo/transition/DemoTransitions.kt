@@ -84,7 +84,7 @@ object DemoTransitions {
             set.addTransition(
                 Fade(Fade.IN)
                     .addTarget(R.id.game_status)
-                    .addTarget(R.id.hint_button)
+                    .addTarget(R.id.hint_toggle)
                     .timed(timings.visibility, timings),
             )
         }

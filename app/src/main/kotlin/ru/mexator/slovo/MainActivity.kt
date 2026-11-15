@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity() {
                 KeyboardView.Key.Submit -> submitGuess()
             }
         }
-        views.hintButton.setOnClickListener { toggleHint(views) }
+        views.hintToggle.setOnClickListener { toggleHint(views) }
 
         val scene = Scene(binding.sceneRoot, views.root)
         if (animated) {
@@ -357,9 +357,12 @@ class MainActivity : AppCompatActivity() {
         Mark.ABSENT -> 0
     }
 
+    /** Пример 4 готовит здесь сцену: строка-ссылка «Показать подсказку ›»
+     * раскрывает hintText; частые тапы станут сюжетом отмены анимаций. */
     private fun toggleHint(views: SceneGameBinding) {
-        views.hintText.visibility =
-            if (views.hintText.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        val show = views.hintText.visibility != View.VISIBLE
+        views.hintText.visibility = if (show) View.VISIBLE else View.GONE
+        views.hintToggle.setText(if (show) R.string.hide_hint else R.string.show_hint)
     }
 
     /** Пример 5 (M3): shared element into ArticleFragment. M0: plain add, no animations. */

@@ -37,6 +37,9 @@ class KeyboardView @JvmOverloads constructor(
     private val keyViews = mutableMapOf<Char, TextView>()
     private val keyColor = Color.rgb(0xDF, 0xE1, 0xE4)
 
+    /** ⏎ и ⌫ — не буквы: подсвечены, чтобы отличались одним взглядом. */
+    private val actionKeyColor = Color.rgb(0xC5, 0xCE, 0xDA)
+
     init {
         // Клавиатура всегда вертикальная стойка рядов — не настраивается.
         orientation = VERTICAL
@@ -54,20 +57,20 @@ class KeyboardView @JvmOverloads constructor(
         listOf("ЙЦУКЕНГШЩЗХЪ", "ФЫВАПРОЛДЖЭ").forEach { letters ->
             val row = row()
             letters.forEach { c ->
-                val k = key(c.toString(), 1f) { onKey?.invoke(Key.Letter(c)) }
+                val k = key(c.toString(), 1f, keyColor) { onKey?.invoke(Key.Letter(c)) }
                 keyViews[c] = k
                 row.addView(k)
             }
             addView(row)
         }
         val bottom = row()
-        bottom.addView(key("⌫", 1.5f) { onKey?.invoke(Key.Backspace) })
+        bottom.addView(key("⏎", 1.5f, actionKeyColor) { onKey?.invoke(Key.Submit) })
         "ЯЧСМИТЬБЮ".forEach { c ->
-            val k = key(c.toString(), 1f) { onKey?.invoke(Key.Letter(c)) }
+            val k = key(c.toString(), 1f, keyColor) { onKey?.invoke(Key.Letter(c)) }
             keyViews[c] = k
             bottom.addView(k)
         }
-        bottom.addView(key("⏎", 1.5f) { onKey?.invoke(Key.Submit) })
+        bottom.addView(key("⌫", 1.5f, actionKeyColor) { onKey?.invoke(Key.Backspace) })
         addView(bottom)
     }
 
@@ -81,7 +84,7 @@ class KeyboardView @JvmOverloads constructor(
      * it at this height, which made the letters unreadable. A bold TextView with a
      * gray background and a ripple foreground behaves and reads like a key.
      */
-    private fun key(label: String, weight: Float, onClick: () -> Unit): TextView =
+    private fun key(label: String, weight: Float, background: Int, onClick: () -> Unit): TextView =
         TextView(context).apply {
             text = label
             layoutParams = LayoutParams(0, dp(52), weight).apply {
@@ -91,7 +94,7 @@ class KeyboardView @JvmOverloads constructor(
             textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.BLACK)
-            setBackgroundColor(keyColor)
+            setBackgroundColor(background)
             val ripple = TypedValue()
             context.theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
             foreground = resources.getDrawable(ripple.resourceId, context.theme)

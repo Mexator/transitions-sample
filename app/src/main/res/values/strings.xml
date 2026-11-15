@@ -3,7 +3,8 @@
     <string name="app_name">Слово</string>
     <string name="subtitle">Угадай слово из 5 букв за 6 попыток</string>
     <string name="play">Играть</string>
-    <string name="hint">Подсказка</string>
+    <string name="show_hint">Показать подсказку ›</string>
+    <string name="hide_hint">Скрыть подсказку ›</string>
     <string name="attempts_left">Осталось попыток: %1$d</string>
     <string name="won">Разгадано!</string>
     <string name="lost">Попытки кончились</string>
