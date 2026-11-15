@@ -2,9 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="12dp">
+
+    <!-- The content block floats in the middle. The keyboard is pinned to the
+         bottom at the SAME bounds as in scene_game (same padding, same bottom
+         margin), so the scene swap leaves it standing — already docked. -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -23,8 +30,8 @@
         android:textSize="16sp" />
 
     <!-- Shared element №1: a small copy of the field. transitionName="board"
-         matches the full board in scene_game, so the SAME-looking object is
-         seen growing from these bounds (Пример 2). -->
+         matches the full board in scene_game; CenteredChangeBounds grows the
+         final board out of these bounds around their center (Пример 2). -->
     <LinearLayout
         android:id="@+id/board_preview"
         android:layout_width="190dp"
@@ -36,17 +43,6 @@
         android:padding="4dp"
         android:transitionName="board" />
 
-    <!-- Shared element №2: the keyboard is present in BOTH scenes with the same
-         transitionName, so it docks smoothly instead of popping in. Keys are
-         built here too, but inert until the game starts. -->
-    <LinearLayout
-        android:id="@+id/keyboard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:orientation="vertical"
-        android:transitionName="keyboard" />
-
     <Button
         android:id="@+id/play_button"
         android:layout_width="wrap_content"
@@ -55,4 +51,20 @@
         android:layout_marginTop="24dp"
         android:text="@string/play"
         android:textSize="18sp" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Shared element №2: the keyboard exists in BOTH scenes at identical
+         bounds with the same transitionName. Keys are built here too, but
+         inert until the game starts. -->
+    <LinearLayout
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical"
+        android:transitionName="keyboard" />
 </LinearLayout>

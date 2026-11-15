@@ -19,3 +19,4 @@ local.properties
 
 # Claude Code context — local only (device serial, local paths); repo is public
 /CLAUDE.md
+/.claude/

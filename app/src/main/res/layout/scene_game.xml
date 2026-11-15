@@ -12,9 +12,10 @@
         android:layout_gravity="center_horizontal"
         android:textSize="14sp" />
 
-    <!-- Shared element with the play button in scene_start (transitionName="board").
-         The FRAME is the shared element; the cells inside it are ordinary children —
-         they lay out at final size instantly, the deliberate wart for Пример 3. -->
+    <!-- Shared element with the mini field in scene_start (transitionName="board").
+         The FRAME is the shared element; CenteredChangeBounds replays the mini
+         field's bounds onto it with scale + translation around the center, so the
+         cells inside scale along with the frame instead of being clipped. -->
     <LinearLayout
         android:id="@+id/board"
         android:layout_width="match_parent"

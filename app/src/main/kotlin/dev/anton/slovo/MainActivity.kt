@@ -15,6 +15,7 @@ import androidx.transition.ChangeBounds
 import androidx.transition.Scene
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
+import androidx.transition.TransitionSet
 import dev.anton.core.dict.Dictionary
 import dev.anton.core.dict.SlovarContract
 import dev.anton.slovo.databinding.ActivityMainBinding
@@ -27,6 +28,7 @@ import dev.anton.slovo.game.GameState
 import dev.anton.slovo.game.GameStatus
 import dev.anton.slovo.game.Mark
 import dev.anton.slovo.game.SubmitResult
+import dev.anton.slovo.transition.CenteredChangeBounds
 import dev.anton.slovo.transition.ChangeColorTransition
 
 /**
@@ -43,6 +45,12 @@ class MainActivity : AppCompatActivity() {
         const val COMMAND_SURRENDER = "surrender"
         const val COLOR_DURATION = 600L
         const val CONTAINER_DURATION = 900L
+
+        /** transitionName of the field in scene_start ↔ scene_game. */
+        const val TRANSITION_BOARD = "board"
+
+        /** transitionName of the keyboard, present in both scenes. */
+        const val TRANSITION_KEYBOARD = "keyboard"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -140,12 +148,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Пример 2: «Играть» morphs into the board frame via Scene + go().
-     * The framework matches the button and the board by transitionName and
-     * animates the FINAL board from the button's captured bounds — the audience
-     * can watch the final-scene view being animated (slow-mo ×5 in the panel).
-     * The cells inside pop in at final size on purpose: ChangeBounds interpolates
-     * the container's bounds only, which sets up Пример 3.
+     * Пример 2: the mini field morphs into the board via Scene + go(). Views are
+     * matched by transitionName across the scenes. The keyboard sits at identical
+     * bounds in both scenes, so its ChangeBounds is a no-op — it stays docked at
+     * the bottom. The board frame is animated by [CenteredChangeBounds]: it
+     * replays the mini field's bounds onto the final view with scale +
+     * translation around the center, so the cells scale along with the frame
+     * instead of being clipped inside animating bounds (that clipped variant was
+     * the pre-fix state — plain ChangeBounds animates layout bounds only).
      */
     private fun showGameScene(animated: Boolean) {
         val views = SceneGameBinding.inflate(layoutInflater, binding.sceneRoot, false)
@@ -156,7 +166,13 @@ class MainActivity : AppCompatActivity() {
 
         val scene = Scene(binding.sceneRoot, views.root)
         if (animated) {
-            TransitionManager.go(scene, ChangeBounds().demoDuration(CONTAINER_DURATION))
+            TransitionManager.go(
+                scene,
+                TransitionSet()
+                    .addTransition(CenteredChangeBounds().addTarget(TRANSITION_BOARD))
+                    .addTransition(ChangeBounds().addTarget(TRANSITION_KEYBOARD))
+                    .demoDuration(CONTAINER_DURATION),
+            )
         } else {
             scene.enter()
         }
