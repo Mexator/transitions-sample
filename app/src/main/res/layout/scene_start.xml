@@ -38,7 +38,7 @@
          smaller cells. transitionName="board" matches the full board in
          scene_game; CenteredChangeBounds grows the final board out of these
          bounds around their center (Пример 2). -->
-    <dev.anton.core.dict.widget.BoardView
+    <ru.mexator.core.dict.widget.BoardView
         android:id="@+id/board_preview"
         android:layout_width="190dp"
         android:layout_height="wrap_content"
@@ -70,7 +70,7 @@
     <!-- Shared element №2: the keyboard exists in BOTH scenes at identical
          bounds with the same transitionName. KeyboardView builds its keys
          itself; without a listener they are inert until the game starts. -->
-    <dev.anton.slovo.widget.KeyboardView
+    <ru.mexator.slovo.widget.KeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

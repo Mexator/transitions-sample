@@ -18,7 +18,7 @@
          field's bounds onto it with scale + translation around the center, so the
          cells inside scale along with the frame instead of being clipped.
          Rows are BoardRowView instances — exactly what the restart Explode targets. -->
-    <dev.anton.core.dict.widget.BoardView
+    <ru.mexator.core.dict.widget.BoardView
         android:id="@+id/board"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
         android:layout_weight="1" />
 
     <!-- Shared element №2: matches the start scene's keyboard by transitionName -->
-    <dev.anton.slovo.widget.KeyboardView
+    <ru.mexator.slovo.widget.KeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-  namespace = "dev.anton.core.dict"
+  namespace = "ru.mexator.core.dict"
   compileSdk = 37
 
   defaultConfig {

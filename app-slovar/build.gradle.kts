@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-  namespace = "dev.anton.slovar"
+  namespace = "ru.mexator.slovar"
   compileSdk = 37
 
   defaultConfig {
-    applicationId = "dev.anton.slovar"
+    applicationId = "ru.mexator.slovar"
     minSdk = 24
     targetSdk = 37
     versionCode = 1

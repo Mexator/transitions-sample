@@ -5,7 +5,7 @@
         <!-- Own launcher icon in debug builds: the recording cockpit sits next
              to the game in the launcher. -->
         <activity
-            android:name="dev.anton.slovo.debug.DemoPanelActivity"
+            android:name="ru.mexator.slovo.debug.DemoPanelActivity"
             android:exported="true"
             android:label="@string/demo_panel_name"
             android:theme="@style/Theme.Slovo">

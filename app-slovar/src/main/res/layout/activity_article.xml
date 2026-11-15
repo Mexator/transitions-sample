@@ -14,7 +14,7 @@
         <!-- Заголовок статьи — слово «клетками»: тот же ряд, из которого собрано
          поле игры (общий виджет core-dict). Сюда же прилетает shared element из
          другого процесса (Пример 6); transitionName ставится в коде. -->
-        <dev.anton.core.dict.widget.BoardRowView
+        <ru.mexator.core.dict.widget.BoardRowView
             android:id="@+id/article_word_row"
             android:layout_width="280dp"
             android:layout_height="wrap_content"
