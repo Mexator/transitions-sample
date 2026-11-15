@@ -1,18 +1,12 @@
 package ru.mexator.slovo
 
-import android.graphics.Rect
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.transition.Explode
-import androidx.transition.Fade
 import androidx.transition.Scene
-import androidx.transition.Slide
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
-import androidx.transition.TransitionSet
 import ru.mexator.core.dict.Dictionary
 import ru.mexator.core.dict.SlovarContract
 import ru.mexator.core.ui.widget.KeyboardView
@@ -26,9 +20,7 @@ import ru.mexator.slovo.game.GameState
 import ru.mexator.slovo.game.GameStatus
 import ru.mexator.slovo.game.Mark
 import ru.mexator.slovo.game.SubmitResult
-import ru.mexator.slovo.transition.CenteredChangeBounds
 import ru.mexator.slovo.transition.DemoTransitions
-import ru.mexator.slovo.transition.requireTargetedVisibility
 import ru.mexator.core.ui.R as UiR
 
 /**
@@ -38,17 +30,14 @@ import ru.mexator.core.ui.R as UiR
  * debug panel can turn the app back into its "no animations" Пример 0 state.
  *
  * Пример 5: живёт в fragment_container и никогда не снимается — WinFragment и
- * ArticleFragment добавляются ПОВЕРХ (add, не replace), поэтому инстансы рядов
- * поля переживают экран победы, и Explode-перезапуск Примера 3 работает без
- * изменений. Выигрыш со слоем FRAGMENT — навигация на WinFragment, и ряд,
- * угадавший слово, летит в шапку shared element'ом.
+ * ArticleFragment добавляются ПОВЕРХ (hide + add), поэтому инстансы рядов поля
+ * переживают экран победы. Выигрыш со слоем FRAGMENT — навигация на WinFragment,
+ * и ряд, угадавший слово, летит в шапку shared element'ом. «Ещё раз» по решению
+ * Антона мгновенный: поле не двигается, готовая пустая доска (двухпроходный
+ * Explode-рестарт Примера 3 жил до тега ex5 — материал для слайда про
+ * промежуточные сцены ищи там).
  */
 class GameFragment : Fragment(R.layout.fragment_game) {
-
-    companion object {
-        /** Pause between the two Explode passes of a restart (see explodeRestart). */
-        const val RESTART_GAP = 60L
-    }
 
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
@@ -157,76 +146,11 @@ class GameFragment : Fragment(R.layout.fragment_game) {
             showGameScene(
                 animated = animated && DemoConfig.isEnabled(DemoLayer.CONTAINER),
             )
-        } else if (DemoConfig.isEnabled(DemoLayer.VISIBILITY)) {
-            explodeRestart()
         } else {
+            // Мгновенный рестарт по решению Антона: поле не двигается, «Ещё раз»
+            // оставляет готовую пустую доску. Никаких проходов на этот флип не
+            // вооружаем — render() чистит ряды, возвращает клавиатуру и валит финал.
             controller.startNewGame(DemoConfig.wordOverride)
-        }
-    }
-
-    /**
-     * Пример 3: «Ещё раз» clears the board with Explode — a Visibility subclass.
-     * A single transition pass can't animate one view both disappearing and
-     * appearing, so this is the "intermediate scene" trick: pass 1 explodes the
-     * played rows out — they animate in the ViewOverlay, already GONE from the
-     * hierarchy — while the finale fades away and the keyboard slides back in;
-     * pass 2 explodes fresh empty rows in. The [RESTART_GAP] pause between the
-     * passes is the price of the trick.
-     */
-    private fun explodeRestart() {
-        val views = gameViews ?: return
-        val rows: List<View> = views.board.rows.toList()
-
-        // Pass 1 — no render() on purpose: the exploding rows must keep their
-        // played colors in the overlay copy; the state resets only in pass 2.
-        // Explode is targeted at the rows only: an untargeted Visibility would
-        // also capture the keyboard/finale flips and fight the targeted Slide
-        // and Fade above (two animators summing translations on one view).
-        // requireTargetedVisibility() codifies that rule — it crashes loudly if
-        // a future edit reintroduces the mistake.
-        TransitionManager.beginDelayedTransition(
-            binding.root,
-            TransitionSet()
-                .addTransition(
-                    Slide(Gravity.BOTTOM).addTarget(R.id.keyboard).demoDuration(demoTimings.visibility),
-                )
-                .addTransition(Fade(Fade.OUT).addTarget(R.id.finale).demoDuration(demoTimings.visibility))
-                .addTransition(explodeFromBoard(views.board, rows).demoDuration(demoTimings.explode))
-                .requireTargetedVisibility(),
-        )
-        rows.forEach { it.visibility = View.GONE }
-        binding.finale.visibility = View.GONE
-        views.keyboard.visibility = View.VISIBLE
-
-        binding.root.postDelayed(
-            {
-                // Pass 2: rows are still GONE, so this Explode catches their
-                // appear; startNewGame's render then fills them as empty cells.
-                if (gameViews == null) return@postDelayed
-                TransitionManager.beginDelayedTransition(
-                    binding.root,
-                    explodeFromBoard(views.board, rows).demoDuration(demoTimings.explode),
-                )
-                rows.forEach { it.visibility = View.VISIBLE }
-                controller.startNewGame(DemoConfig.wordOverride)
-            },
-            demoTimings.scaled(demoTimings.explode) + RESTART_GAP,
-        )
-    }
-
-    /**
-     * Explode with its epicenter at the board's center — rows radiate out of it.
-     * Targeted at exactly those rows so it never collides with the Slide/Fade
-     * children that own the keyboard and the finale.
-     */
-    private fun explodeFromBoard(board: View, rows: List<View>): Explode {
-        val epicenter = Rect()
-        board.getGlobalVisibleRect(epicenter)
-        return Explode().apply {
-            rows.forEach(::addTarget)
-            setEpicenterCallback(object : Transition.EpicenterCallback() {
-                override fun onGetEpicenter(transition: Transition): Rect = epicenter
-            })
         }
     }
 
@@ -352,9 +276,8 @@ class GameFragment : Fragment(R.layout.fragment_game) {
             }
         }
         // Пример 4: рестарт — рядов стало меньше, чем в прошлом рендере —
-        // возвращаем карточку подсказки в свёрнутое состояние. На
-        // exploded-перезапуске флип snapping-ом: проход 2 таргетит Explode
-        // только на ряды. Во время живой игры (rows не убывали) не трогаем.
+        // возвращаем карточку подсказки в свёрнутое состояние (мгновенный
+        // флип, без прохода). Во время живой игры (rows не убывали) не трогаем.
         if (state.rows.size < renderedRows) {
             gameViews?.hintText?.visibility = View.GONE
             gameViews?.hintToggle?.setText(R.string.show_hint)
