@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -36,6 +35,7 @@ import dev.anton.slovo.transition.CenteredChangeBounds
 import dev.anton.slovo.transition.ChangeColorTransition
 import dev.anton.slovo.transition.DemoTransitions
 import dev.anton.slovo.transition.requireTargetedVisibility
+import dev.anton.slovo.widget.KeyboardView
 
 /**
  * The game renders [GameState] into whichever scene is on screen. Scenes are
@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var controller: GameController
     private val cells: MutableList<MutableList<TextView>> = mutableListOf()
-    private val keys = mutableMapOf<Char, TextView>()
     private var renderedRows = 0
 
     /** Scene views are re-inflated per scene swap — render() only touches live ones. */
@@ -82,7 +81,6 @@ class MainActivity : AppCompatActivity() {
     private val correctColor = Color.rgb(0x6A, 0xAA, 0x64)
     private val presentColor = Color.rgb(0xC9, 0xB4, 0x58)
     private val absentColor = Color.rgb(0x9A, 0x9A, 0x9A)
-    private val keyColor = Color.rgb(0xDF, 0xE1, 0xE4)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,7 +131,6 @@ class MainActivity : AppCompatActivity() {
         val views = SceneStartBinding.inflate(layoutInflater, binding.sceneRoot, false)
         startViews = views
         buildMiniBoard(views)
-        buildKeyboard(views.keyboard, interactive = false)
         Scene(binding.sceneRoot, views.root).enter() // first show: no transition
         views.playButton.setOnClickListener { startGame() }
     }
@@ -249,7 +246,13 @@ class MainActivity : AppCompatActivity() {
         val views = SceneGameBinding.inflate(layoutInflater, binding.sceneRoot, false)
         gameViews = views
         buildBoard(views)
-        buildKeyboard(views.keyboard, interactive = true)
+        views.keyboard.onKey = { key ->
+            when (key) {
+                is KeyboardView.Key.Letter -> controller.type(key.char)
+                KeyboardView.Key.Backspace -> controller.backspace()
+                KeyboardView.Key.Submit -> submitGuess()
+            }
+        }
         views.hintButton.setOnClickListener { toggleHint(views) }
 
         val scene = Scene(binding.sceneRoot, views.root)
@@ -295,33 +298,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * The keyboard exists in both scenes as a shared element. On the start scene
-     * the keys are inert copies (no game yet); on the game scene they are live
-     * and registered in [keys] for tinting.
-     */
-    private fun buildKeyboard(container: LinearLayout, interactive: Boolean) {
-        if (interactive) keys.clear()
-        listOf("ЙЦУКЕНГШЩЗХЪ", "ФЫВАПРОЛДЖЭ").forEach { letters ->
-            val row = linearRow()
-            letters.forEach { c ->
-                val k = key(c.toString()) { if (interactive) controller.type(c) }
-                if (interactive) keys[c] = k
-                row.addView(k)
-            }
-            container.addView(row)
-        }
-        val bottomRow = linearRow()
-        bottomRow.addView(key("⌫", 1.5f) { if (interactive) controller.backspace() })
-        "ЯЧСМИТЬБЮ".forEach { c ->
-            val k = key(c.toString()) { if (interactive) controller.type(c) }
-            if (interactive) keys[c] = k
-            bottomRow.addView(k)
-        }
-        bottomRow.addView(key("⏎", 1.5f) { if (interactive) submitGuess() })
-        container.addView(bottomRow)
-    }
-
+    /** Horizontal row for the board/mini-board grid (the keyboard builds its own). */
     private fun linearRow() = LinearLayout(this).apply {
         layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -329,28 +306,6 @@ class MainActivity : AppCompatActivity() {
         )
         orientation = LinearLayout.HORIZONTAL
     }
-
-    /**
-     * TextView, not Button: Material Button reserves insets for its label and clips
-     * it at this height, which made the letters unreadable. A bold TextView with a
-     * gray background and a ripple foreground behaves and reads like a key.
-     */
-    private fun key(label: String, weight: Float = 1f, onClick: () -> Unit): TextView =
-        TextView(this).apply {
-            text = label
-            layoutParams = LinearLayout.LayoutParams(0, dp(52), weight).apply {
-                setMargins(dp(3), dp(3), dp(3), dp(3))
-            }
-            gravity = Gravity.CENTER
-            textSize = 20f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.BLACK)
-            setBackgroundColor(keyColor)
-            val ripple = android.util.TypedValue()
-            theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
-            foreground = resources.getDrawable(ripple.resourceId, theme)
-            setOnClickListener { onClick() }
-        }
 
     private fun submitGuess() {
         // Arm the transition set BEFORE submit(): submit dispatches render()
@@ -432,21 +387,20 @@ class MainActivity : AppCompatActivity() {
 
     /** Keyboard keys take the best mark their letter ever received. */
     private fun tintKeyboard(state: GameState) {
-        if (keys.isEmpty()) return
+        val view = gameViews ?: return
         val best = mutableMapOf<Char, Mark>()
         for (row in state.rows) {
             row.word.forEachIndexed { i, ch -> best[ch] = maxRank(best[ch], row.marks[i]) }
         }
-        keys.forEach { (ch, view) ->
-            view.setBackgroundColor(
-                when (best[ch]) {
+        view.keyboard.tint(
+            best.mapValues { (_, mark) ->
+                when (mark) {
                     Mark.CORRECT -> correctColor
                     Mark.PRESENT -> presentColor
                     Mark.ABSENT -> absentColor
-                    null -> keyColor
-                },
-            )
-        }
+                }
+            },
+        )
     }
 
     private fun maxRank(a: Mark?, b: Mark): Mark = when {

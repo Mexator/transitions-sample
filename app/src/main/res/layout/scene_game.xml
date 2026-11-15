@@ -49,11 +49,10 @@
         android:layout_weight="1" />
 
     <!-- Shared element №2: matches the start scene's keyboard by transitionName -->
-    <LinearLayout
+    <dev.anton.slovo.widget.KeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:orientation="vertical"
         android:transitionName="keyboard" />
 </LinearLayout>

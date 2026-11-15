@@ -62,13 +62,12 @@
         android:layout_weight="1" />
 
     <!-- Shared element №2: the keyboard exists in BOTH scenes at identical
-         bounds with the same transitionName. Keys are built here too, but
-         inert until the game starts. -->
-    <LinearLayout
+         bounds with the same transitionName. KeyboardView builds its keys
+         itself; without a listener they are inert until the game starts. -->
+    <dev.anton.slovo.widget.KeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:orientation="vertical"
         android:transitionName="keyboard" />
 </LinearLayout>
