@@ -6,19 +6,15 @@
 
 ## Примеры → код
 
-Kotlin-корни модулей: `:app` и `:app-slovar` — `src/main/kotlin/ru/mexator/…`, `:core-dict` — `src/main/kotlin/ru/mexator/core/dict/…`.
-
-| Пример | Что показывает | Ключевой код | Тег |
-|---|---|---|---|
-| 0. Без анимаций | «До»: как выглядит приложение без переходов. Все слои панели выключены | `MainActivity.render()` — чистая мутация вью без анимаций | [`ex0`](../../tree/ex0) |
-| 1. Смена цвета | Кастомный `Transition` + `beginDelayedTransition`: отправленное слово перекрашивает клетки и клавиши | `:app` → `transition/ChangeColorTransition.kt`, `transition/DemoTransitions.gameplay()` | [`ex1`](../../tree/ex1) |
-| 2. Container transform | `Scene` + `TransitionManager#go()`: мини-поле стартового экрана вырастает в доску **от центра**, клавиатура стоит на месте — оба shared element | `:app` → `transition/CenteredChangeBounds.kt`, `MainActivity.showGameScene()`, `res/layout/scene_start.xml` + `scene_game.xml` | [`ex2`](../../tree/ex2) |
-| 3. Появление/исчезновение | `Visibility` + `ViewOverlay`: клавиатура уезжает вниз (`Slide`), финал проявляется (`Fade`), на «Ещё раз» доска разлетается и собирается (`Explode`, два прохода) | `:app` → `transition/DemoTransitions.kt`, `MainActivity.explodeRestart()` | [`ex3`](../../tree/ex3) |
-| 4. Отмена анимаций | Быстрые переключения сворачиваемой подсказки — отмену предыдущего перехода берёт на себя фреймворк | — | запланирован |
-| 5. Переход между фрагментами | Chip со словом → заголовок `ArticleFragment` (shared element) | — | запланирован |
-| 6. Переход между приложениями | `ActivityOptions.makeSceneTransitionAnimation` через процессную границу в отдельный APK «Словарь» | `:core-dict` → `SlovarContract.kt`, `:app-slovar` | запланирован |
-
-Дифф с примером N на GitHub — `…/compare/exN−1...exN` (например, `compare/ex2...ex3` — весь Пример 3). Именно эти ссылки — на слайдах.
+| Пример | Что показывает | Код |
+|---|---|---|
+| 0. Без анимаций | «До»: как выглядит приложение без переходов. Все слои панели выключены | [MainActivity.kt](app/src/main/kotlin/ru/mexator/slovo/MainActivity.kt) — `render()` |
+| 1. Смена цвета | Кастомный `Transition` + `beginDelayedTransition`: отправленное слово перекрашивает клетки и клавиши | [ChangeColorTransition.kt](app/src/main/kotlin/ru/mexator/slovo/transition/ChangeColorTransition.kt), [DemoTransitions.kt](app/src/main/kotlin/ru/mexator/slovo/transition/DemoTransitions.kt) — `gameplay()` |
+| 2. Container transform | `Scene` + `TransitionManager#go()`: мини-поле стартового экрана вырастает в доску **от центра**, клавиатура стоит на месте — оба shared element | [CenteredChangeBounds.kt](app/src/main/kotlin/ru/mexator/slovo/transition/CenteredChangeBounds.kt), [MainActivity.kt](app/src/main/kotlin/ru/mexator/slovo/MainActivity.kt) — `showGameScene()`, [scene_start.xml](app/src/main/res/layout/scene_start.xml), [scene_game.xml](app/src/main/res/layout/scene_game.xml) |
+| 3. Появление/исчезновение | `Visibility` + `ViewOverlay`: клавиатура уезжает вниз (`Slide`), финал проявляется (`Fade`), на «Ещё раз» доска разлетается и собирается (`Explode`, два прохода) | [DemoTransitions.kt](app/src/main/kotlin/ru/mexator/slovo/transition/DemoTransitions.kt), [MainActivity.kt](app/src/main/kotlin/ru/mexator/slovo/MainActivity.kt) — `explodeRestart()` |
+| 4. Отмена анимаций | Быстрые переключения сворачиваемой подсказки — отмену предыдущего перехода берёт на себя фреймворк | [scene_game.xml](app/src/main/res/layout/scene_game.xml) — блок подсказки *(в работе)* |
+| 5. Переход между фрагментами | Chip со словом → заголовок `ArticleFragment` (shared element) | [ArticleFragment.kt](app/src/main/kotlin/ru/mexator/slovo/ArticleFragment.kt) *(в работе)* |
+| 6. Переход между приложениями | `ActivityOptions.makeSceneTransitionAnimation` через процессную границу в отдельный APK «Словарь» | [Dictionary.kt](core-dict/src/main/kotlin/ru/mexator/core/dict/Dictionary.kt) — `SlovarContract`, [ArticleActivity.kt](app-slovar/src/main/kotlin/ru/mexator/slovar/ArticleActivity.kt) *(в работе)* |
 
 ## Демо-панель
 
