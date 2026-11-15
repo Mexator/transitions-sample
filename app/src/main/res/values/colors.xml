@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Базовая палитра «Слова» — оттенки из open-source схемы Open Color
+  (https://yeun.github.io/open-color/), ряды blue-* и gray-*.
+  Метки игры (mark_*/board_*) живут в core-ui и не входят в тему:
+  это семантика поля, общая с «Словарём».
+-->
+<resources>
+    <!-- Primary: Open Color blue-8; белый текст на нём ~5.4:1 -->
+    <color name="slovo_primary">#FF1971C2</color>
+    <color name="slovo_on_primary">#FFFFFFFF</color>
+    <color name="slovo_primary_container">#FFD0EBFF</color>
+    <color name="slovo_on_primary_container">#FF1864AB</color>
+
+    <!-- Secondary: нейтральный gray — кнопки и ссылки остаются синими -->
+    <color name="slovo_secondary">#FF495057</color>
+    <color name="slovo_secondary_container">#FFF1F3F5</color>
+    <color name="slovo_on_secondary_container">#FF212529</color>
+
+    <!-- Фон-«бумага» и статусбар под него -->
+    <color name="slovo_background">#FFF8F9FA</color>
+</resources>

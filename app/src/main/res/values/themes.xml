@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- windowActivityTransitions: both sides need it for the cross-app shared
-         element (Пример 6). The game stays light-only for a deterministic demo. -->
+         element (Пример 6). The game stays light-only for a deterministic demo.
+         Палитра — Open Color (blue/gray), токены в colors.xml; «Словарь»
+         остаётся на дефолтной Material3 теме. -->
     <style name="Theme.Slovo" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:windowActivityTransitions">true</item>
+
+        <item name="colorPrimary">@color/slovo_primary</item>
+        <item name="colorOnPrimary">@color/slovo_on_primary</item>
+        <item name="colorPrimaryContainer">@color/slovo_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/slovo_on_primary_container</item>
+
+        <item name="colorSecondary">@color/slovo_secondary</item>
+        <item name="colorSecondaryContainer">@color/slovo_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/slovo_on_secondary_container</item>
+
+        <item name="android:colorBackground">@color/slovo_background</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/slovo_on_secondary_container</item>
+        <item name="android:statusBarColor">@color/slovo_background</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

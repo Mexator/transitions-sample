@@ -65,6 +65,7 @@
     <!-- Shared element №2: matches the start scene's keyboard by transitionName -->
     <ru.mexator.core.ui.widget.KeyboardView
         android:id="@+id/keyboard"
+        style="@style/Widget.Slovo.KeyboardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"

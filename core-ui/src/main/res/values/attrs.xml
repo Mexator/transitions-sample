@@ -26,4 +26,19 @@
         <attr name="boardCellTextSize" />
         <attr name="boardCellColor" />
     </declare-styleable>
+
+    <!-- Экранная клавиатура (KeyboardView, только «Слово»). Цвета задаются
+         атрибутами — приложение приносит свою палитру через style=; дефолты
+         берутся из colors.xml core-ui. -->
+    <attr name="keyboardKeyColor" format="color" />
+    <attr name="keyboardKeyTextColor" format="color" />
+    <attr name="keyboardActionKeyColor" format="color" />
+    <attr name="keyboardActionKeyTextColor" format="color" />
+
+    <declare-styleable name="KeyboardView">
+        <attr name="keyboardKeyColor" />
+        <attr name="keyboardKeyTextColor" />
+        <attr name="keyboardActionKeyColor" />
+        <attr name="keyboardActionKeyTextColor" />
+    </declare-styleable>
 </resources>

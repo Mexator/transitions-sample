@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Экранные клавиатуры «Слова» (обе сцены): экшн-клавиши ⏎/⌫ — того же
+         цвета, что primary-кнопки («Играть» и кнопки финала), текст — белый.
+         Буквенные клавиши остаются на дефолтах core-ui. -->
+    <style name="Widget.Slovo.KeyboardView" parent="">
+        <item name="keyboardActionKeyColor">@color/slovo_primary</item>
+        <item name="keyboardActionKeyTextColor">@color/slovo_on_primary</item>
+    </style>
+</resources>

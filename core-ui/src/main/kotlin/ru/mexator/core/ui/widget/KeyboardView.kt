@@ -1,7 +1,6 @@
 package ru.mexator.core.ui.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -36,14 +35,40 @@ class KeyboardView @JvmOverloads constructor(
     var onKey: ((Key) -> Unit)? = null
 
     private val keyViews = mutableMapOf<Char, TextView>()
-    private val keyColor = context.getColor(R.color.keyboard_key)
+
+    private val keyColor: Int
+    private val keyTextColor: Int
 
     /** ⏎ и ⌫ — не буквы: подсвечены, чтобы отличались одним взглядом. */
-    private val actionKeyColor = context.getColor(R.color.keyboard_key_action)
+    private val actionKeyColor: Int
+    private val actionKeyTextColor: Int
 
     init {
         // Клавиатура всегда вертикальная стойка рядов — не настраивается.
         orientation = VERTICAL
+
+        // Палитра — атрибутами: приложение приносит свои цвета через style=
+        // (Widget.Slovo.KeyboardView), дефолты — из colors.xml core-ui.
+        context.obtainStyledAttributes(attrs, R.styleable.KeyboardView).apply {
+            keyColor = getColor(
+                R.styleable.KeyboardView_keyboardKeyColor,
+                context.getColor(R.color.keyboard_key),
+            )
+            keyTextColor = getColor(
+                R.styleable.KeyboardView_keyboardKeyTextColor,
+                context.getColor(R.color.keyboard_key_text),
+            )
+            actionKeyColor = getColor(
+                R.styleable.KeyboardView_keyboardActionKeyColor,
+                context.getColor(R.color.keyboard_key_action),
+            )
+            actionKeyTextColor = getColor(
+                R.styleable.KeyboardView_keyboardActionKeyTextColor,
+                context.getColor(R.color.keyboard_key_action_text),
+            )
+            recycle()
+        }
+
         buildRows()
     }
 
@@ -58,20 +83,20 @@ class KeyboardView @JvmOverloads constructor(
         listOf("ЙЦУКЕНГШЩЗХЪ", "ФЫВАПРОЛДЖЭ").forEach { letters ->
             val row = row()
             letters.forEach { c ->
-                val k = key(c.toString(), 1f, keyColor) { onKey?.invoke(Key.Letter(c)) }
+                val k = letterKey(c) { onKey?.invoke(Key.Letter(c)) }
                 keyViews[c] = k
                 row.addView(k)
             }
             addView(row)
         }
         val bottom = row()
-        bottom.addView(key("⏎", 1.5f, actionKeyColor) { onKey?.invoke(Key.Submit) })
+        bottom.addView(actionKey("⏎", 1.5f) { onKey?.invoke(Key.Submit) })
         "ЯЧСМИТЬБЮ".forEach { c ->
-            val k = key(c.toString(), 1f, keyColor) { onKey?.invoke(Key.Letter(c)) }
+            val k = letterKey(c) { onKey?.invoke(Key.Letter(c)) }
             keyViews[c] = k
             bottom.addView(k)
         }
-        bottom.addView(key("⌫", 1.5f, actionKeyColor) { onKey?.invoke(Key.Backspace) })
+        bottom.addView(actionKey("⌫", 1.5f) { onKey?.invoke(Key.Backspace) })
         addView(bottom)
     }
 
@@ -80,12 +105,24 @@ class KeyboardView @JvmOverloads constructor(
         orientation = HORIZONTAL
     }
 
+    private fun letterKey(c: Char, onClick: () -> Unit): TextView =
+        key(c.toString(), 1f, keyColor, keyTextColor, onClick)
+
+    private fun actionKey(label: String, weight: Float, onClick: () -> Unit): TextView =
+        key(label, weight, actionKeyColor, actionKeyTextColor, onClick)
+
     /**
      * TextView, не Button: Material Button reserves insets for its label and clips
      * it at this height, which made the letters unreadable. A bold TextView with a
-     * gray background and a ripple foreground behaves and reads like a key.
+     * background color and a ripple foreground behaves and reads like a key.
      */
-    private fun key(label: String, weight: Float, background: Int, onClick: () -> Unit): TextView =
+    private fun key(
+        label: String,
+        weight: Float,
+        background: Int,
+        textColor: Int,
+        onClick: () -> Unit,
+    ): TextView =
         TextView(context).apply {
             text = label
             layoutParams = LayoutParams(0, dp(52), weight).apply {
@@ -94,7 +131,7 @@ class KeyboardView @JvmOverloads constructor(
             gravity = Gravity.CENTER
             textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.BLACK)
+            setTextColor(textColor)
             setBackgroundColor(background)
             val ripple = TypedValue()
             context.theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)

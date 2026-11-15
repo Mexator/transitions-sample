@@ -7,7 +7,10 @@
     <color name="mark_present">#FFC9B458</color>
     <color name="mark_absent">#FF9A9A9A</color>
 
-    <!-- Клавиатура -->
-    <color name="keyboard_key">#FFDFE1E4</color>
-    <color name="keyboard_key_action">#FFC5CEDA</color>
+    <!-- Клавиатура (Open Color: gray-3/gray-9 — дефолты; «Слово» перекрашивает
+         экшн-клавиши своим стилем). Используется только «Словом». -->
+    <color name="keyboard_key">#FFDEE2E6</color>
+    <color name="keyboard_key_action">#FF4DABF7</color>
+    <color name="keyboard_key_text">#FF212529</color>
+    <color name="keyboard_key_action_text">#FF212529</color>
 </resources>
