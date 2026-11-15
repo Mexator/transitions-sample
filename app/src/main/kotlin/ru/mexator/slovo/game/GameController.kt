@@ -18,7 +18,7 @@ class GameController(
     private val dictionary: Dictionary,
     private val onStateChanged: (GameState) -> Unit,
 ) {
-    var state: GameState = GameState(dictionary.wordOfTheDay())
+    var state: GameState = GameState(dictionary.randomWord())
         private set
 
     init {
@@ -26,7 +26,9 @@ class GameController(
     }
 
     fun startNewGame(word: String? = null) {
-        state = GameState(word?.uppercase() ?: dictionary.wordOfTheDay())
+        // word != null — сценарий демо-панели (wordOverride); иначе случайное
+        // слово, не повторяющее только что сыгранное.
+        state = GameState(word?.uppercase() ?: dictionary.randomWord(exclude = state.target))
         dispatch()
     }
 

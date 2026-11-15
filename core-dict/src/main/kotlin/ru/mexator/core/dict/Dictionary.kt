@@ -76,4 +76,14 @@ object Dictionary {
         val idx = ((day % articles.size) + articles.size).toInt() % articles.size
         return articles[idx].word
     }
+
+    /**
+     * Случайное слово для партии: всегда из статей — подсказка (Пример 4) и
+     * статья «Словаря» (Примеры 5–6) обязаны работать на любом слове.
+     * [exclude] — не возвращать его: реролл рестарта не должен повторить
+     * только что сыгранное слово. Сценарии записи (демо-панель) проходят
+     * мимо — через wordOverride в DemoConfig.
+     */
+    fun randomWord(exclude: String? = null): String =
+        articles.map { it.word }.filter { it != exclude }.random()
 }

@@ -45,4 +45,17 @@ class DictionaryTest {
             )
         }
     }
+
+    @Test
+    fun `random word always has an article and respects exclude`() {
+        val articleWords = Dictionary.articles.map { it.word }.toSet()
+        repeat(50) {
+            val word = Dictionary.randomWord()
+            assertTrue("randomWord must pick a word with an article", word in articleWords)
+        }
+        // Рестарт не должен повторить только что сыгранное слово
+        repeat(20) {
+            assertTrue(Dictionary.randomWord(exclude = "СЛОВО") != "СЛОВО")
+        }
+    }
 }
