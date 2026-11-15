@@ -16,3 +16,6 @@ local.properties
 /app/build
 /app-slovar/build
 /core-dict/build
+
+# Claude Code context — local only (device serial, local paths); repo is public
+/CLAUDE.md
