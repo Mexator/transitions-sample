@@ -21,12 +21,12 @@ class ArticleActivity : AppCompatActivity() {
         val word = (intent.getStringExtra(SlovarContract.EXTRA_WORD) ?: Dictionary.wordOfTheDay())
             .uppercase()
 
-        findViewById<TextView>(R.id.article_word).apply {
+        // Заголовок — ряд «клеток» (общий виджет с полем игры) и он же приёмник
+        // cross-app shared element (Пример 6).
+        findViewById<BoardRowView>(R.id.article_word_row).apply {
             transitionName = SlovarContract.TRANSITION_WORD
-            text = word
+            setWord(word)
         }
-        // Те же «клетки», из которых собрано поле игры — общий виджет из core-dict.
-        findViewById<BoardRowView>(R.id.article_word_row).setWord(word)
         findViewById<TextView>(R.id.article_body).text =
             Dictionary.articleOf(word)?.body ?: getString(R.string.no_article)
         findViewById<android.view.View>(R.id.btn_close).setOnClickListener { finish() }

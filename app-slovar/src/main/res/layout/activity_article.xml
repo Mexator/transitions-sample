@@ -11,26 +11,18 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Shared element source arrives here from another process (Пример 6).
-             transitionName is set in code (SlovarContract.TRANSITION_WORD). -->
-        <TextView
-            android:id="@+id/article_word"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="48sp"
-            android:textStyle="bold" />
-
-        <!-- The same row of cells the game field is built from (core-dict):
-         одно приложение показывает слово «клетками» другого. -->
+        <!-- Заголовок статьи — слово «клетками»: тот же ряд, из которого собрано
+         поле игры (общий виджет core-dict). Сюда же прилетает shared element из
+         другого процесса (Пример 6); transitionName ставится в коде. -->
         <dev.anton.core.dict.widget.BoardRowView
             android:id="@+id/article_word_row"
-            android:layout_width="220dp"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_gravity="center_horizontal"
             app:boardColumns="5"
-            app:boardCellSize="40dp"
+            app:boardCellSize="52dp"
             app:boardCellMargin="4dp"
-            app:boardCellTextSize="20sp" />
+            app:boardCellTextSize="24sp" />
 
         <TextView
             android:id="@+id/article_body"
