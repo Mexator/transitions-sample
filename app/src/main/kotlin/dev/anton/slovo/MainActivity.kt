@@ -3,6 +3,7 @@ package dev.anton.slovo
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -118,13 +119,25 @@ class MainActivity : AppCompatActivity() {
         orientation = LinearLayout.HORIZONTAL
     }
 
-    private fun key(label: String, weight: Float = 1f, onClick: () -> Unit): Button =
-        Button(this).apply {
+    /**
+     * TextView, not Button: Material Button reserves insets for its label and clips
+     * it at this height, which made the letters unreadable. A bold TextView with a
+     * gray background and a ripple foreground behaves and reads like a key.
+     */
+    private fun key(label: String, weight: Float = 1f, onClick: () -> Unit): TextView =
+        TextView(this).apply {
             text = label
-            layoutParams = LinearLayout.LayoutParams(0, dp(48), weight).apply {
+            layoutParams = LinearLayout.LayoutParams(0, dp(52), weight).apply {
                 setMargins(dp(3), dp(3), dp(3), dp(3))
             }
-            textSize = 18f
+            gravity = Gravity.CENTER
+            textSize = 20f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.BLACK)
+            setBackgroundColor(Color.rgb(0xDF, 0xE1, 0xE4))
+            val ripple = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
+            foreground = resources.getDrawable(ripple.resourceId, theme)
             setOnClickListener { onClick() }
         }
 
