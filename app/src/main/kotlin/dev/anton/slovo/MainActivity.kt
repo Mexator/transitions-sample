@@ -7,29 +7,33 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
+import androidx.transition.ChangeBounds
+import androidx.transition.Scene
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import dev.anton.core.dict.Dictionary
 import dev.anton.core.dict.SlovarContract
+import dev.anton.slovo.databinding.ActivityMainBinding
+import dev.anton.slovo.databinding.SceneGameBinding
+import dev.anton.slovo.databinding.SceneStartBinding
 import dev.anton.slovo.demo.DemoConfig
 import dev.anton.slovo.demo.DemoLayer
-import dev.anton.slovo.databinding.ActivityMainBinding
-import dev.anton.slovo.transition.ChangeColorTransition
 import dev.anton.slovo.game.GameController
+import dev.anton.slovo.game.GameState
 import dev.anton.slovo.game.GameStatus
 import dev.anton.slovo.game.Mark
 import dev.anton.slovo.game.SubmitResult
+import dev.anton.slovo.transition.ChangeColorTransition
 
 /**
- * M0 baseline: fully playable, zero animations — the "before" state of the talk.
- * Every animation lands in later milestones on top of this render(state) loop.
+ * The game renders [GameState] into whichever scene is on screen. Scenes are
+ * swapped with TransitionManager (Пример 2), recoloring runs through a custom
+ * Transition (Пример 1). Every animated layer is gated by [DemoConfig] so the
+ * debug panel can turn the app back into its "no animations" Пример 0 state.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -38,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         const val COMMAND_START = "start"
         const val COMMAND_SURRENDER = "surrender"
         const val COLOR_DURATION = 600L
+        const val CONTAINER_DURATION = 900L
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -45,6 +50,10 @@ class MainActivity : AppCompatActivity() {
     private val cells: MutableList<MutableList<TextView>> = mutableListOf()
     private val keys = mutableMapOf<Char, TextView>()
     private var renderedRows = 0
+
+    /** Scene views are re-inflated per scene swap — render() only touches live ones. */
+    private var startViews: SceneStartBinding? = null
+    private var gameViews: SceneGameBinding? = null
 
     // M1: move into shared styles so same-looking views share their look across scenes
     private val emptyColor = Color.rgb(0xF2, 0xF2, 0xF2)
@@ -60,11 +69,11 @@ class MainActivity : AppCompatActivity() {
 
         controller = GameController(Dictionary, ::render)
 
-        binding.playButton.setOnClickListener { startGame() }
+        showStartScene()
+
         binding.btnMeaning.setOnClickListener { openMeaning() }
         binding.btnSlovar.setOnClickListener { openSlovar() }
         binding.btnRestart.setOnClickListener { startGame() }
-        binding.hintButton.setOnClickListener { toggleHint() }
 
         // M3 (Пример 5): the fragment container shows/hides with the back stack
         supportFragmentManager.addOnBackStackChangedListener {
@@ -72,8 +81,6 @@ class MainActivity : AppCompatActivity() {
             binding.articleContainer.visibility = if (show) View.VISIBLE else View.GONE
         }
 
-        buildBoard()
-        buildKeyboard()
         render(controller.state)
         handleDemoCommand(intent)
     }
@@ -88,23 +95,57 @@ class MainActivity : AppCompatActivity() {
         when (intent?.getStringExtra(EXTRA_DEMO_COMMAND)) {
             COMMAND_START -> startGame()
             COMMAND_SURRENDER -> {
-                if (binding.gameScene.visibility != View.VISIBLE) startGame()
+                if (gameViews == null) startGame()
                 controller.surrender()
             }
         }
     }
 
-    private fun startGame() {
-        controller.startNewGame(DemoConfig.wordOverride)
-        binding.startScene.visibility = View.GONE
-        binding.gameScene.visibility = View.VISIBLE
-        binding.finale.visibility = View.GONE
-        binding.hintText.visibility = View.GONE
-        binding.hintText.text = Dictionary.articleOf(controller.state.target)?.hint.orEmpty()
+    private fun showStartScene() {
+        val views = SceneStartBinding.inflate(layoutInflater, binding.sceneRoot, false)
+        startViews = views
+        Scene(binding.sceneRoot, views.root).enter() // first show: no transition
+        views.playButton.setOnClickListener { startGame() }
     }
 
-    /** Cells are created once and updated in place — the substrate Transitions API needs later. */
-    private fun buildBoard() {
+    private fun startGame() {
+        val needScene = gameViews == null
+        controller.startNewGame(DemoConfig.wordOverride)
+        binding.finale.visibility = View.GONE
+        if (needScene) {
+            showGameScene(animated = DemoConfig.isEnabled(DemoLayer.CONTAINER))
+        } else {
+            render(controller.state)
+        }
+    }
+
+    /**
+     * Пример 2: «Играть» morphs into the board frame via Scene + go().
+     * The framework matches the button and the board by transitionName and
+     * animates the FINAL board from the button's captured bounds — the audience
+     * can watch the final-scene view being animated (slow-mo ×5 in the panel).
+     * The cells inside pop in at final size on purpose: ChangeBounds interpolates
+     * the container's bounds only, which sets up Пример 3.
+     */
+    private fun showGameScene(animated: Boolean) {
+        val views = SceneGameBinding.inflate(layoutInflater, binding.sceneRoot, false)
+        gameViews = views
+        buildBoard(views)
+        buildKeyboard(views)
+        views.hintButton.setOnClickListener { toggleHint(views) }
+
+        val scene = Scene(binding.sceneRoot, views.root)
+        if (animated) {
+            TransitionManager.go(scene, ChangeBounds().demoDuration(CONTAINER_DURATION))
+        } else {
+            scene.enter()
+        }
+        render(controller.state)
+    }
+
+    /** Cells are created once per game and updated in place — the substrate Transitions API needs. */
+    private fun buildBoard(views: SceneGameBinding) {
+        cells.clear()
         repeat(controller.state.maxAttempts) {
             val row = LinearLayout(this).apply {
                 layoutParams = LinearLayout.LayoutParams(
@@ -126,11 +167,12 @@ class MainActivity : AppCompatActivity() {
                 row.addView(cell)
             }
             cells += rowCells
-            binding.board.addView(row)
+            views.board.addView(row)
         }
     }
 
-    private fun buildKeyboard() {
+    private fun buildKeyboard(views: SceneGameBinding) {
+        keys.clear()
         listOf("ЙЦУКЕНГШЩЗХЪ", "ФЫВАПРОЛДЖЭ").forEach { letters ->
             val row = linearRow()
             letters.forEach { c ->
@@ -138,7 +180,7 @@ class MainActivity : AppCompatActivity() {
                 keys[c] = k
                 row.addView(k)
             }
-            binding.keyboard.addView(row)
+            views.keyboard.addView(row)
         }
         val bottomRow = linearRow()
         bottomRow.addView(key("⌫", 1.5f) { controller.backspace() })
@@ -148,7 +190,7 @@ class MainActivity : AppCompatActivity() {
             bottomRow.addView(k)
         }
         bottomRow.addView(key("⏎", 1.5f) { submitGuess() })
-        binding.keyboard.addView(bottomRow)
+        views.keyboard.addView(bottomRow)
     }
 
     private fun linearRow() = LinearLayout(this).apply {
@@ -174,7 +216,7 @@ class MainActivity : AppCompatActivity() {
             textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.BLACK)
-            setBackgroundColor(Color.rgb(0xDF, 0xE1, 0xE4))
+            setBackgroundColor(keyColor)
             val ripple = android.util.TypedValue()
             theme.resolveAttribute(android.R.attr.selectableItemBackground, ripple, true)
             foreground = resources.getDrawable(ripple.resourceId, theme)
@@ -189,7 +231,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun render(state: dev.anton.slovo.game.GameState) {
+    private fun render(state: GameState) {
         // Пример 1: a freshly submitted row recolors cells and keyboard keys through
         // a custom Transition. beginDelayedTransition captures current colors now;
         // the mutations below become the transition's end scene.
@@ -226,11 +268,12 @@ class MainActivity : AppCompatActivity() {
         }
         tintKeyboard(state)
 
-        binding.gameStatus.text = when (state.status) {
+        gameViews?.gameStatus?.text = when (state.status) {
             GameStatus.PLAYING -> getString(R.string.attempts_left, state.maxAttempts - state.attempts)
             GameStatus.WON -> getString(R.string.won)
             GameStatus.LOST -> getString(R.string.lost)
         }
+        gameViews?.hintText?.text = Dictionary.articleOf(state.target)?.hint.orEmpty()
 
         val finished = state.status != GameStatus.PLAYING
         binding.finale.visibility = if (finished) View.VISIBLE else View.GONE
@@ -245,7 +288,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** Keyboard keys take the best mark their letter ever received. */
-    private fun tintKeyboard(state: dev.anton.slovo.game.GameState) {
+    private fun tintKeyboard(state: GameState) {
         if (keys.isEmpty()) return
         val best = mutableMapOf<Char, Mark>()
         for (row in state.rows) {
@@ -275,13 +318,9 @@ class MainActivity : AppCompatActivity() {
         Mark.ABSENT -> 0
     }
 
-    private fun Transition.demoDuration(base: Long): Transition = apply {
-        duration = (base * DemoConfig.durationMultiplier).toLong()
-    }
-
-    private fun toggleHint() {
-        binding.hintText.visibility =
-            if (binding.hintText.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+    private fun toggleHint(views: SceneGameBinding) {
+        views.hintText.visibility =
+            if (views.hintText.visibility == View.VISIBLE) View.GONE else View.VISIBLE
     }
 
     /** Пример 5 (M3): shared element into ArticleFragment. M0: plain add, no animations. */
@@ -304,6 +343,10 @@ class MainActivity : AppCompatActivity() {
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(this, R.string.install_slovar, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun Transition.demoDuration(base: Long): Transition = apply {
+        duration = (base * DemoConfig.durationMultiplier).toLong()
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
