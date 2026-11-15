@@ -109,6 +109,10 @@ class MainActivity : AppCompatActivity() {
             .setClassName(SlovarContract.PACKAGE, SlovarContract.ACTIVITY)
             .putExtra(SlovarContract.EXTRA_WORD, word)
             .putExtra(SlovarContract.EXTRA_GREEN, greenRow)
+            // NEW_TASK|CLEAR_TASK — своя задача и ВСЕГДА свежий запуск (живая
+            // задача поднималась бы вперёд без перехода — поймано кадрами как
+            // «магия есть через раз»); две карточки в Recents. Флаги не влияют
+            // на обратный перелёт — см. wart про return в CLAUDE.md.
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         try {
             val options =
