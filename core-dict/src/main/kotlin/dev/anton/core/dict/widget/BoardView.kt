@@ -47,11 +47,11 @@ class BoardView @JvmOverloads constructor(
             recycle()
         }
         repeat(rowCount) {
-            BoardRowView(context).apply {
+            val row = BoardRowView(context).apply {
                 configure(columns, cellSizePx, cellMarginPx, cellTextSizePx, cellColor)
-                rows += this
-                addView(this)
             }
+            rows += row
+            addView(row)
         }
     }
 

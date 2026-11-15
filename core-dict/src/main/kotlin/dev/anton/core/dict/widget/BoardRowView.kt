@@ -80,7 +80,9 @@ class BoardRowView @JvmOverloads constructor(
         cells.clear()
         removeAllViews()
         repeat(columns) {
-            TextView(context).apply {
+            // Локальная val вместо addView(this) внутри apply — тот же приём, что
+            // в BoardView: не полагаемся на порядок неявных ресиверов.
+            val cell = TextView(context).apply {
                 layoutParams = LayoutParams(0, cellSizePx, 1f).apply {
                     setMargins(cellMarginPx, cellMarginPx, cellMarginPx, cellMarginPx)
                 }
@@ -88,9 +90,9 @@ class BoardRowView @JvmOverloads constructor(
                 setTextColor(Color.BLACK)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, cellTextSizePx.toFloat())
                 setBackgroundColor(cellColor)
-                cells += this
-                addView(this)
             }
+            cells += cell
+            addView(cell)
         }
     }
 
