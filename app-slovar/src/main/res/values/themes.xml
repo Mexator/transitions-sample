@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The receiver must opt in to activity transitions for the cross-app
+         shared element (Пример 6) — same attribute as the game side. -->
+    <style name="Theme.Slovar" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowActivityTransitions">true</item>
+    </style>
+</resources>

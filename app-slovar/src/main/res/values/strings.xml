@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Словарь</string>
+    <string name="close">Закрыть</string>
+    <string name="no_article">Статьи для этого слова пока нет</string>
+</resources>

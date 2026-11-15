@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Слово</string>
+    <string name="subtitle">Угадай слово из 5 букв за 6 попыток</string>
+    <string name="play">Играть</string>
+    <string name="hint">Подсказка</string>
+    <string name="attempts_left">Осталось попыток: %1$d</string>
+    <string name="won">Разгадано!</string>
+    <string name="lost">Попытки кончились</string>
+    <string name="not_a_word">Нет такого слова</string>
+    <string name="meaning">Что это значит?</string>
+    <string name="open_in_slovar">Открыть в Словаре</string>
+    <string name="restart">Ещё раз</string>
+    <string name="close">Закрыть</string>
+    <string name="install_slovar">Установите приложение «Словарь»</string>
+    <string name="no_article">Статьи для этого слова пока нет</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- windowActivityTransitions: both sides need it for the cross-app shared
+         element (Пример 6). The game stays light-only for a deterministic demo. -->
+    <style name="Theme.Slovo" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowActivityTransitions">true</item>
+    </style>
+</resources>

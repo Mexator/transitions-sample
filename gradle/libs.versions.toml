@@ -1,0 +1,22 @@
+[versions]
+androidGradlePlugin = "9.0.1"
+androidxCore = "1.18.0"
+androidxActivity = "1.13.0"
+androidxAppcompat = "1.7.1"
+androidxFragment = "1.8.7"
+androidxTransition = "1.5.1"
+material = "1.12.0"
+junit = "4.13.2"
+
+[libraries]
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidxActivity" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidxFragment" }
+androidx-transition = { module = "androidx.transition:transition", version.ref = "androidxTransition" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+junit = { module = "junit:junit", version.ref = "junit" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
