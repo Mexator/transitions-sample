@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Палитра «клеток»: поле, финал, «Словарь» — цвета общие для обоих приложений. -->
+    <color name="board_cell_default">#FFF2F2F2</color>
+    <color name="board_frame">#FFE8E8E8</color>
+    <color name="mark_correct">#FF6AAA64</color>
+    <color name="mark_present">#FFC9B458</color>
+    <color name="mark_absent">#FF9A9A9A</color>
+
+    <!-- Клавиатура -->
+    <color name="keyboard_key">#FFDFE1E4</color>
+    <color name="keyboard_key_action">#FFC5CEDA</color>
+</resources>

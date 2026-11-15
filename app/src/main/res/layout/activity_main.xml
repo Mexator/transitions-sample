@@ -37,7 +37,7 @@
              «Словарь» across the process boundary (Пример 6). Тот же ряд «клеток»,
              что и заголовок «Словаря» — shared element летит ряд-в-ряд одинаковой
              геометрии. transitionName is set in code (SlovarContract.TRANSITION_WORD). -->
-        <ru.mexator.core.dict.widget.BoardRowView
+        <ru.mexator.core.ui.widget.BoardRowView
             android:id="@+id/word_chip"
             android:layout_width="280dp"
             android:layout_height="wrap_content"

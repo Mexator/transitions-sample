@@ -35,3 +35,4 @@ rootProject.name = "wordle-transitions"
 include(":app")
 include(":app-slovar")
 include(":core-dict")
+include(":core-ui")

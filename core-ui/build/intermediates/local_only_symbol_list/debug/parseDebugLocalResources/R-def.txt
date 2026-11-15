@@ -1,0 +1,17 @@
+R_DEF: Internal format may change without notice
+local
+attr boardCellColor
+attr boardCellMargin
+attr boardCellSize
+attr boardCellTextSize
+attr boardColumns
+attr boardRows
+color board_cell_default
+color board_frame
+color keyboard_key
+color keyboard_key_action
+color mark_absent
+color mark_correct
+color mark_present
+styleable BoardRowView boardColumns boardCellSize boardCellMargin boardCellTextSize boardCellColor
+styleable BoardView boardRows boardColumns boardCellSize boardCellMargin boardCellTextSize boardCellColor

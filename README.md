@@ -32,6 +32,7 @@ adb install -r -t app-slovar/build/outputs/apk/debug/app-slovar-debug.apk
 
 - **`:app`** — игра «Слово» (`ru.mexator.slovo`). Экраны — Scene-лейауты (`scene_start` / `scene_game`), сменяются `TransitionManager#go()` внутри одной Activity. Все переходы собраны в `transition/DemoTransitions.kt` (+ `CenteredChangeBounds` и `ChangeColorTransition` рядом)
 - **`:app-slovar`** — «Словарь» (`ru.mexator.slovar`), отдельный APK: приёмник cross-app shared element из Примера 6
-- **`:core-dict`** — общее: слова, статьи, `SlovarContract` (интент + общие `transitionName`) и общие вьюшки `BoardView`/`BoardRowView` — «Словарь» показывает слово тем же рядом «клеток», из которого собрано поле игры
+- **`:core-ui`** — общие вьюшки `BoardView`/`BoardRowView` и `KeyboardView` (пакет `ru.mexator.core.ui.widget`) и палитра в `colors.xml` — «Словарь» показывает слово тем же рядом «клеток», из которого собрано поле игры
+- **`:core-dict`** — общее: слова, статьи, `SlovarContract` (интент + общие `transitionName`)
 
 Банк слов — 2394 существительных по 5 букв из [wordle_ru](https://github.com/KarKarbI4/wordle_ru) (там он собран из частотного словаря [dict.ruslang.ru](http://dict.ruslang.ru/freq.php)); статьи для демонстрационных слов написаны вручную.

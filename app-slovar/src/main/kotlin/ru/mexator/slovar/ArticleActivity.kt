@@ -5,7 +5,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import ru.mexator.core.dict.Dictionary
 import ru.mexator.core.dict.SlovarContract
-import ru.mexator.core.dict.widget.BoardRowView
+import ru.mexator.core.ui.widget.BoardRowView
 
 /**
  * Пример 6: receiving side of the cross-app shared element.

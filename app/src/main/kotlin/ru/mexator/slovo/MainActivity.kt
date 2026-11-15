@@ -2,7 +2,6 @@ package ru.mexator.slovo
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.Gravity
@@ -29,11 +28,12 @@ import ru.mexator.slovo.game.GameState
 import ru.mexator.slovo.game.GameStatus
 import ru.mexator.slovo.game.Mark
 import ru.mexator.slovo.game.SubmitResult
+import ru.mexator.core.ui.widget.KeyboardView
 import ru.mexator.slovo.transition.CenteredChangeBounds
 import ru.mexator.slovo.transition.ChangeColorTransition
 import ru.mexator.slovo.transition.DemoTransitions
 import ru.mexator.slovo.transition.requireTargetedVisibility
-import ru.mexator.slovo.widget.KeyboardView
+import ru.mexator.core.ui.R as UiR
 
 /**
  * The game renders [GameState] into whichever scene is on screen. Scenes are
@@ -73,11 +73,12 @@ class MainActivity : AppCompatActivity() {
     private var startViews: SceneStartBinding? = null
     private var gameViews: SceneGameBinding? = null
 
-    // M1: move into shared styles so same-looking views share their look across scenes
-    private val emptyColor = Color.rgb(0xF2, 0xF2, 0xF2)
-    private val correctColor = Color.rgb(0x6A, 0xAA, 0x64)
-    private val presentColor = Color.rgb(0xC9, 0xB4, 0x58)
-    private val absentColor = Color.rgb(0x9A, 0x9A, 0x9A)
+    // Палитра — в ресурсах core-ui (colors.xml): одни цвета на поле, финал, «Словарь».
+    // lazy — базовый контекст Activity ещё не прикреплен на этапе инициализации полей.
+    private val emptyColor by lazy { getColor(UiR.color.board_cell_default) }
+    private val correctColor by lazy { getColor(UiR.color.mark_correct) }
+    private val presentColor by lazy { getColor(UiR.color.mark_present) }
+    private val absentColor by lazy { getColor(UiR.color.mark_absent) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

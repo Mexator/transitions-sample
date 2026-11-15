@@ -1,0 +1,26 @@
+int attr boardCellColor 0x0
+int attr boardCellMargin 0x0
+int attr boardCellSize 0x0
+int attr boardCellTextSize 0x0
+int attr boardColumns 0x0
+int attr boardRows 0x0
+int color board_cell_default 0x0
+int color board_frame 0x0
+int color keyboard_key 0x0
+int color keyboard_key_action 0x0
+int color mark_absent 0x0
+int color mark_correct 0x0
+int color mark_present 0x0
+int[] styleable BoardRowView { 0x0, 0x0, 0x0, 0x0, 0x0 }
+int styleable BoardRowView_boardCellColor 0
+int styleable BoardRowView_boardCellMargin 1
+int styleable BoardRowView_boardCellSize 2
+int styleable BoardRowView_boardCellTextSize 3
+int styleable BoardRowView_boardColumns 4
+int[] styleable BoardView { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }
+int styleable BoardView_boardCellColor 0
+int styleable BoardView_boardCellMargin 1
+int styleable BoardView_boardCellSize 2
+int styleable BoardView_boardCellTextSize 3
+int styleable BoardView_boardColumns 4
+int styleable BoardView_boardRows 5

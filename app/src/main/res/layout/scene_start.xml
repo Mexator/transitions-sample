@@ -38,13 +38,13 @@
          smaller cells. transitionName="board" matches the full board in
          scene_game; CenteredChangeBounds grows the final board out of these
          bounds around their center (Пример 2). -->
-    <ru.mexator.core.dict.widget.BoardView
+    <ru.mexator.core.ui.widget.BoardView
         android:id="@+id/board_preview"
         android:layout_width="190dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="24dp"
-        android:background="#E8E8E8"
+        android:background="@color/board_frame"
         android:padding="4dp"
         android:transitionName="board"
         app:boardRows="6"
@@ -70,7 +70,7 @@
     <!-- Shared element №2: the keyboard exists in BOTH scenes at identical
          bounds with the same transitionName. KeyboardView builds its keys
          itself; without a listener they are inert until the game starts. -->
-    <ru.mexator.slovo.widget.KeyboardView
+    <ru.mexator.core.ui.widget.KeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
