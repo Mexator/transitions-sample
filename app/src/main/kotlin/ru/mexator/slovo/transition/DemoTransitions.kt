@@ -7,6 +7,7 @@ import androidx.transition.Slide
 import androidx.transition.Transition
 import androidx.transition.TransitionSet
 import androidx.transition.Visibility
+import ru.mexator.core.dict.SlovarContract
 import ru.mexator.slovo.R
 
 /**
@@ -20,13 +21,17 @@ object DemoTransitions {
     const val TRANSITION_BOARD = "board"
     const val TRANSITION_KEYBOARD = "keyboard"
 
-    /** Base durations in ms plus the demo panel's slow-mo multiplier. */
+    /**
+     * Base durations in ms plus the demo panel's slow-mo multiplier. Defaults
+     * are the single source of truth (they lived in MainActivity until Пример 5
+     * — now WinFragment/ArticleFragment need them too).
+     */
     data class Timings(
-        val color: Long,
-        val container: Long,
-        val visibility: Long,
-        val explode: Long,
-        val cancel: Long,
+        val color: Long = 600L,
+        val container: Long = 900L,
+        val visibility: Long = 450L,
+        val explode: Long = 500L,
+        val cancel: Long = 350L,
         val slowMo: Float = 1f,
     ) {
         fun scaled(base: Long): Long = (base * slowMo).toLong()
@@ -111,6 +116,24 @@ object DemoTransitions {
             )
             .requireTargetedVisibility()
     }
+
+    /**
+     * Пример 5: перелёт выигравшего ряда из поля в шапку экрана победы (и из
+     * неё — в шапку статьи). Тот же CenteredChangeBounds, что морфил мини-поле
+     * в Примере 2: центр-пивот, клетки скейлятся вместе с рядом, без клиппинга.
+     * Ставится как sharedElementEnterTransition входящего фрагмента.
+     */
+    fun sharedRowFlight(timings: Timings): Transition =
+        CenteredChangeBounds()
+            .addTarget(SlovarContract.TRANSITION_WORD)
+            .timed(timings.container, timings)
+
+    /**
+     * Пример 5: остальное содержимое входящего фрагмента (заголовок, кнопки,
+     * текст статьи) проявляется Fade. Shared elements фреймворк из enter
+     * transition исключает сам — ряд летит, а не растворяется.
+     */
+    fun hopFade(timings: Timings): Fade = Fade().timed(timings.visibility, timings)
 
     private fun <T : Transition> T.timed(base: Long, timings: Timings): T =
         apply { duration = timings.scaled(base) }

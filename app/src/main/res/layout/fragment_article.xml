@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:elevation="8dp"
     android:fillViewport="true">
 
     <LinearLayout
@@ -10,13 +13,17 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Shared element target for Пример 5: transitionName set in code -->
-        <TextView
-            android:id="@+id/article_word"
-            android:layout_width="wrap_content"
+        <!-- Пример 5: заголовок статьи — тот же ряд «клеток», что летит из поля
+         через экран победы. Геометрия как у win_word_row и заголовка «Словаря»;
+         transitionName ставится в коде. -->
+        <ru.mexator.core.ui.widget.BoardRowView
+            android:id="@+id/article_word_row"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
-            android:textSize="40sp"
-            android:textStyle="bold" />
+            app:boardColumns="5"
+            app:boardCellSize="52dp"
+            app:boardCellMargin="4dp"
+            app:boardCellTextSize="24sp" />
 
         <TextView
             android:id="@+id/article_body"

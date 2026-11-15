@@ -6,12 +6,13 @@ import androidx.transition.Fade
 import androidx.transition.Slide
 import androidx.transition.TransitionSet
 import androidx.transition.Visibility
-import ru.mexator.slovo.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import ru.mexator.core.dict.SlovarContract
+import ru.mexator.slovo.R
 
 /**
  * Composition tests: which transition children run for which layer combo, and
@@ -127,6 +128,31 @@ class DemoTransitionsTest {
     fun `hintToggle slow-mo scales child durations`() {
         val set = DemoTransitions.hintToggle(cancelOn = true, timings = timings)!!
         assertEquals(700L, set.children()[0].duration) // 350 * slowMo 2
+    }
+
+    // --- fragment hop (Пример 5: ряд летит между фрагментами) -----------------
+
+    @Test
+    fun `sharedRowFlight is CenteredChangeBounds targeted at the word row only`() {
+        val flight = DemoTransitions.sharedRowFlight(timings)
+        assertTrue(flight is CenteredChangeBounds)
+        assertEquals(listOf(SlovarContract.TRANSITION_WORD), flight.targetNames)
+    }
+
+    @Test
+    fun `sharedRowFlight uses container timing`() {
+        val flight = DemoTransitions.sharedRowFlight(timings)
+        assertEquals(1800L, flight.duration) // 900 * slowMo 2
+    }
+
+    @Test
+    fun `hopFade is a plain Fade with visibility timing`() {
+        val fade = DemoTransitions.hopFade(timings)
+        assertEquals(900L, fade.duration) // 450 * slowMo 2
+        // Без таргетов и это не Set с сиблингами — fade принадлежит только
+        // не-shared содержимому входящего фрагмента.
+        assertTrue(fade.targets.isEmpty())
+        assertTrue(fade.targetIds.isEmpty())
     }
 
     // --- the S2 bug class ----------------------------------------------------

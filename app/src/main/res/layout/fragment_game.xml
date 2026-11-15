@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Пример 2: scene root. Scene layouts (scene_start / scene_game) are swapped
+         here via TransitionManager#go; the «Играть» button and the board share
+         transitionName="board" so ChangeBounds animates the final board from the
+         button's bounds. -->
+    <FrameLayout
+        android:id="@+id/scene_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- M2 (Пример 3): финал слоя FRAGMENT OFF — flips VISIBLE/GONE через
+         Visibility-проходы. Со слоем FRAGMENT ON экран победы — это WinFragment
+         поверх контейнера, а этот оверлей навсегда остаётся GONE. -->
+    <LinearLayout
+        android:id="@+id/finale"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/finale_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Shared element: flies to ArticleFragment header (Пример 5) and into
+             «Словарь» across the process boundary (Пример 6). Тот же ряд «клеток»,
+             что и заголовок «Словаря» — shared element летит ряд-в-ряд одинаковой
+             геометрии. transitionName is set in code (SlovarContract.TRANSITION_WORD). -->
+        <ru.mexator.core.ui.widget.BoardRowView
+            android:id="@+id/word_chip"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:boardColumns="5"
+            app:boardCellSize="52dp"
+            app:boardCellMargin="4dp"
+            app:boardCellTextSize="24sp" />
+
+        <Button
+            android:id="@+id/btn_meaning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/meaning" />
+
+        <Button
+            android:id="@+id/btn_slovar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/open_in_slovar" />
+
+        <Button
+            android:id="@+id/btn_restart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/restart" />
+    </LinearLayout>
+</FrameLayout>

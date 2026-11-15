@@ -2,12 +2,20 @@ package ru.mexator.slovo
 
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import ru.mexator.core.dict.Dictionary
 import ru.mexator.core.dict.SlovarContract
+import ru.mexator.slovo.databinding.FragmentArticleBinding
+import ru.mexator.slovo.demo.DemoConfig
+import ru.mexator.slovo.demo.DemoLayer
+import ru.mexator.slovo.transition.DemoTransitions
 
-/** Пример 5: the article inside the game app. M0: static, no shared element yet. */
+/**
+ * Пример 5: статья внутри игрового приложения. Заголовок — тот же ряд «клеток»,
+ * что и шапка экрана победы: со слоем FRAGMENT ряд прилетает сюда shared
+ * element'ом; со слоем OFF (путь финала-оверлея) статья открывается без
+ * анимаций (Пример 0).
+ */
 class ArticleFragment : Fragment(R.layout.fragment_article) {
 
     companion object {
@@ -18,17 +26,38 @@ class ArticleFragment : Fragment(R.layout.fragment_article) {
         }
     }
 
+    private var _binding: FragmentArticleBinding? = null
+    private val binding get() = _binding!!
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentArticleBinding.bind(view)
+
         val word = requireArguments().getString(ARG_WORD)!!.uppercase()
 
-        view.findViewById<TextView>(R.id.article_word).apply {
-            transitionName = SlovarContract.TRANSITION_WORD
-            text = word
+        if (DemoConfig.isEnabled(DemoLayer.FRAGMENT)) {
+            val timings = DemoTransitions.Timings(slowMo = DemoConfig.durationMultiplier)
+            sharedElementEnterTransition = DemoTransitions.sharedRowFlight(timings)
+            enterTransition = DemoTransitions.hopFade(timings)
         }
-        view.findViewById<TextView>(R.id.article_body).text =
+        // Закрытие — мгновенное: обратный полёт не нужен, а null обязателен —
+        // иначе геттер подставит enter-переход по умолчанию.
+        sharedElementReturnTransition = null
+        returnTransition = null
+
+        binding.articleWordRow.apply {
+            transitionName = SlovarContract.TRANSITION_WORD
+            setWord(word)
+        }
+        binding.articleBody.text =
             Dictionary.articleOf(word)?.body ?: getString(R.string.no_article)
-        view.findViewById<View>(R.id.btn_close).setOnClickListener {
+        binding.btnClose.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
