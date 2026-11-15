@@ -14,10 +14,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import dev.anton.core.dict.Dictionary
 import dev.anton.core.dict.SlovarContract
 import dev.anton.slovo.demo.DemoConfig
+import dev.anton.slovo.demo.DemoLayer
 import dev.anton.slovo.databinding.ActivityMainBinding
+import dev.anton.slovo.transition.ChangeColorTransition
 import dev.anton.slovo.game.GameController
 import dev.anton.slovo.game.GameStatus
 import dev.anton.slovo.game.Mark
@@ -33,17 +37,21 @@ class MainActivity : AppCompatActivity() {
         const val EXTRA_DEMO_COMMAND = "demo.command"
         const val COMMAND_START = "start"
         const val COMMAND_SURRENDER = "surrender"
+        const val COLOR_DURATION = 600L
     }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var controller: GameController
     private val cells: MutableList<MutableList<TextView>> = mutableListOf()
+    private val keys = mutableMapOf<Char, TextView>()
+    private var renderedRows = 0
 
     // M1: move into shared styles so same-looking views share their look across scenes
     private val emptyColor = Color.rgb(0xF2, 0xF2, 0xF2)
     private val correctColor = Color.rgb(0x6A, 0xAA, 0x64)
     private val presentColor = Color.rgb(0xC9, 0xB4, 0x58)
     private val absentColor = Color.rgb(0x9A, 0x9A, 0x9A)
+    private val keyColor = Color.rgb(0xDF, 0xE1, 0xE4)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,12 +133,20 @@ class MainActivity : AppCompatActivity() {
     private fun buildKeyboard() {
         listOf("ЙЦУКЕНГШЩЗХЪ", "ФЫВАПРОЛДЖЭ").forEach { letters ->
             val row = linearRow()
-            letters.forEach { c -> row.addView(key(c.toString()) { controller.type(c) }) }
+            letters.forEach { c ->
+                val k = key(c.toString()) { controller.type(c) }
+                keys[c] = k
+                row.addView(k)
+            }
             binding.keyboard.addView(row)
         }
         val bottomRow = linearRow()
         bottomRow.addView(key("⌫", 1.5f) { controller.backspace() })
-        "ЯЧСМИТЬБЮ".forEach { c -> bottomRow.addView(key(c.toString()) { controller.type(c) }) }
+        "ЯЧСМИТЬБЮ".forEach { c ->
+            val k = key(c.toString()) { controller.type(c) }
+            keys[c] = k
+            bottomRow.addView(k)
+        }
         bottomRow.addView(key("⏎", 1.5f) { submitGuess() })
         binding.keyboard.addView(bottomRow)
     }
@@ -174,6 +190,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun render(state: dev.anton.slovo.game.GameState) {
+        // Пример 1: a freshly submitted row recolors cells and keyboard keys through
+        // a custom Transition. beginDelayedTransition captures current colors now;
+        // the mutations below become the transition's end scene.
+        val justSubmitted = state.rows.size > renderedRows
+        if (justSubmitted && DemoConfig.isEnabled(DemoLayer.COLOR)) {
+            TransitionManager.beginDelayedTransition(
+                binding.root,
+                ChangeColorTransition().demoDuration(COLOR_DURATION),
+            )
+        }
+
         cells.forEachIndexed { rowIdx, rowCells ->
             val submitted = state.rows.getOrNull(rowIdx)
             val isCurrent = rowIdx == state.rows.size && state.status == GameStatus.PLAYING
@@ -197,6 +224,7 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+        tintKeyboard(state)
 
         binding.gameStatus.text = when (state.status) {
             GameStatus.PLAYING -> getString(R.string.attempts_left, state.maxAttempts - state.attempts)
@@ -213,6 +241,42 @@ class MainActivity : AppCompatActivity() {
             binding.wordChip.transitionName = SlovarContract.TRANSITION_WORD
             binding.wordChip.text = state.target
         }
+        renderedRows = state.rows.size
+    }
+
+    /** Keyboard keys take the best mark their letter ever received. */
+    private fun tintKeyboard(state: dev.anton.slovo.game.GameState) {
+        if (keys.isEmpty()) return
+        val best = mutableMapOf<Char, Mark>()
+        for (row in state.rows) {
+            row.word.forEachIndexed { i, ch -> best[ch] = maxRank(best[ch], row.marks[i]) }
+        }
+        keys.forEach { (ch, view) ->
+            view.setBackgroundColor(
+                when (best[ch]) {
+                    Mark.CORRECT -> correctColor
+                    Mark.PRESENT -> presentColor
+                    Mark.ABSENT -> absentColor
+                    null -> keyColor
+                },
+            )
+        }
+    }
+
+    private fun maxRank(a: Mark?, b: Mark): Mark = when {
+        a == null -> b
+        rank(a) >= rank(b) -> a
+        else -> b
+    }
+
+    private fun rank(mark: Mark): Int = when (mark) {
+        Mark.CORRECT -> 2
+        Mark.PRESENT -> 1
+        Mark.ABSENT -> 0
+    }
+
+    private fun Transition.demoDuration(base: Long): Transition = apply {
+        duration = (base * DemoConfig.durationMultiplier).toLong()
     }
 
     private fun toggleHint() {
