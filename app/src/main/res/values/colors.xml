@@ -19,4 +19,8 @@
 
     <!-- Фон-«бумага» и статусбар под него -->
     <color name="slovo_background">#FFF8F9FA</color>
+
+    <!-- Карточка подсказки (Пример 4): white / gray-3 -->
+    <color name="slovo_hint_card_bg">#FFFFFFFF</color>
+    <color name="slovo_hint_card_stroke">#FFDEE2E6</color>
 </resources>

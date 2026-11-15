@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Пример 4: ripple на фоне — клик работает по всей карточке, а не только
+     по строке-ссылке. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/slovo_primary_container">
+
+    <item>
+        <shape>
+            <solid android:color="@color/slovo_hint_card_bg" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/slovo_hint_card_stroke" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</ripple>

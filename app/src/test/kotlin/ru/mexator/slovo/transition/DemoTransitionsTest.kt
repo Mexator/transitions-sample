@@ -26,6 +26,7 @@ class DemoTransitionsTest {
         container = 900L,
         visibility = 450L,
         explode = 500L,
+        cancel = 350L,
         slowMo = 2f,
     )
 
@@ -85,7 +86,7 @@ class DemoTransitionsTest {
         assertEquals(2, fades.size)
         val faded = fades.flatMap { it.targetIds }.toSet()
         assertEquals(
-            setOf(R.id.title, R.id.subtitle, R.id.play_button, R.id.game_status, R.id.hint_toggle),
+            setOf(R.id.title, R.id.subtitle, R.id.play_button, R.id.game_status, R.id.hint_card),
             faded,
         )
         // The shared elements must stay owned by the bounds pair alone — a fade
@@ -96,6 +97,36 @@ class DemoTransitionsTest {
                 R.id.keyboard !in visibilityChild.targetIds,
             )
         }
+    }
+
+    // --- hintToggle (Пример 4: отмена анимаций) ------------------------------
+
+    @Test
+    fun `hintToggle with layer off arms nothing`() {
+        assertNull(DemoTransitions.hintToggle(cancelOn = false, timings = timings))
+    }
+
+    @Test
+    fun `hintToggle arms ChangeBounds on the card and Fade on the text only`() {
+        val set = DemoTransitions.hintToggle(cancelOn = true, timings = timings)!!
+
+        val bounds = set.children().filterIsInstance<ChangeBounds>()
+        assertEquals(1, bounds.size)
+        assertEquals(listOf(R.id.hint_card), bounds[0].targetIds.map { it })
+
+        // Один Fade без явного mode: ловит и появление, и исчезновение текста
+        val fades = set.children().filterIsInstance<Fade>()
+        assertEquals(1, fades.size)
+        assertEquals(listOf(R.id.hint_text), fades[0].targetIds.map { it })
+
+        // Fade не таргетит карточку — иначе альфа-провал контейнера посреди роста
+        assertTrue(R.id.hint_card !in fades[0].targetIds)
+    }
+
+    @Test
+    fun `hintToggle slow-mo scales child durations`() {
+        val set = DemoTransitions.hintToggle(cancelOn = true, timings = timings)!!
+        assertEquals(700L, set.children()[0].duration) // 350 * slowMo 2
     }
 
     // --- the S2 bug class ----------------------------------------------------

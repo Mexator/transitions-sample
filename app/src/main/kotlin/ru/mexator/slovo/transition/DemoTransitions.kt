@@ -26,6 +26,7 @@ object DemoTransitions {
         val container: Long,
         val visibility: Long,
         val explode: Long,
+        val cancel: Long,
         val slowMo: Float = 1f,
     ) {
         fun scaled(base: Long): Long = (base * slowMo).toLong()
@@ -84,11 +85,31 @@ object DemoTransitions {
             set.addTransition(
                 Fade(Fade.IN)
                     .addTarget(R.id.game_status)
-                    .addTarget(R.id.hint_toggle)
+                    .addTarget(R.id.hint_card)
                     .timed(timings.visibility, timings),
             )
         }
         return set.requireTargetedVisibility()
+    }
+
+    /**
+     * Пример 4: подсказка раскрывается/сворачивается в карточку. Рост
+     * контейнера анимирует ChangeBounds (карточка всегда в иерархии — меняются
+     * её границы), текст проявляет Fade. Кода отмены здесь НЕТ намеренно —
+     * это сюжет примера: каждый тап лишь вооружает новый проход, а прерывание
+     * запущенной анимации и реверс с текущего кадра берёт на себя библиотека.
+     * Null при выключенном слое — мгновенный флип (Пример 0).
+     */
+    fun hintToggle(cancelOn: Boolean, timings: Timings): TransitionSet? {
+        if (!cancelOn) return null
+        return TransitionSet()
+            .addTransition(
+                ChangeBounds().addTarget(R.id.hint_card).timed(timings.cancel, timings),
+            )
+            .addTransition(
+                Fade().addTarget(R.id.hint_text).timed(timings.cancel, timings),
+            )
+            .requireTargetedVisibility()
     }
 
     private fun <T : Transition> T.timed(base: Long, timings: Timings): T =

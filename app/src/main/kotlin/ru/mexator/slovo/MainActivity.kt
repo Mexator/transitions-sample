@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         const val CONTAINER_DURATION = 900L
         const val VISIBILITY_DURATION = 450L
         const val EXPLODE_DURATION = 500L
+        const val CANCEL_DURATION = 350L
 
         /** Pause between the two Explode passes of a restart (see explodeRestart). */
         const val RESTART_GAP = 60L
@@ -62,6 +63,7 @@ class MainActivity : AppCompatActivity() {
             container = CONTAINER_DURATION,
             visibility = VISIBILITY_DURATION,
             explode = EXPLODE_DURATION,
+            cancel = CANCEL_DURATION,
             slowMo = DemoConfig.durationMultiplier,
         )
 
@@ -231,7 +233,7 @@ class MainActivity : AppCompatActivity() {
                 KeyboardView.Key.Submit -> submitGuess()
             }
         }
-        views.hintToggle.setOnClickListener { toggleHint(views) }
+        views.hintCard.setOnClickListener { toggleHint(views) }
 
         val scene = Scene(binding.sceneRoot, views.root)
         if (animated) {
@@ -325,6 +327,14 @@ class MainActivity : AppCompatActivity() {
             binding.wordChip.transitionName = SlovarContract.TRANSITION_WORD
             binding.wordChip.setWord(state.target)
         }
+        // Пример 4: рестарт — рядов стало меньше, чем в прошлом рендере —
+        // возвращаем карточку подсказки в свёрнутое состояние. На
+        // exploded-перезапуске флип snapping-ом: проход 2 таргетит Explode
+        // только на ряды. Во время живой игры (rows не убывали) не трогаем.
+        if (state.rows.size < renderedRows) {
+            gameViews?.hintText?.visibility = View.GONE
+            gameViews?.hintToggle?.setText(R.string.show_hint)
+        }
         renderedRows = state.rows.size
     }
 
@@ -358,10 +368,19 @@ class MainActivity : AppCompatActivity() {
         Mark.ABSENT -> 0
     }
 
-    /** Пример 4 готовит здесь сцену: строка-ссылка «Показать подсказку ›»
-     * раскрывает hintText; частые тапы станут сюжетом отмены анимаций. */
+    /**
+     * Пример 4: тап по строке-ссылке внутри карточки раскрывает/сворачивает
+     * подсказку. Вооружаем проход ДО мутаций (как в submitGuess); кода отмены
+     * нет — быстрые тапы просто вооружают новые проходы, библиотека сама
+     * разворачивает анимацию с текущего кадра. Слой CANCEL выключен —
+     * hintToggle вернёт null и флип будет мгновенным (Пример 0).
+     */
     private fun toggleHint(views: SceneGameBinding) {
         val show = views.hintText.visibility != View.VISIBLE
+        DemoTransitions.hintToggle(
+            cancelOn = DemoConfig.isEnabled(DemoLayer.CANCEL),
+            timings = demoTimings,
+        )?.let { TransitionManager.beginDelayedTransition(binding.root, it) }
         views.hintText.visibility = if (show) View.VISIBLE else View.GONE
         views.hintToggle.setText(if (show) R.string.hide_hint else R.string.show_hint)
     }
