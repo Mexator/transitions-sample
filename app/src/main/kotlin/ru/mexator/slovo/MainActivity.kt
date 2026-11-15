@@ -3,6 +3,7 @@ package ru.mexator.slovo
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.transition.ChangeBounds
 import android.view.View
 import android.view.Window
 import android.widget.Toast
@@ -42,6 +43,11 @@ class MainActivity : AppCompatActivity() {
         // у фрагментов, это не ошибка — просто перехода нет).
         if (!window.hasFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)) {
             window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+        }
+        // Обратный перелёт («Закрыть»/Back в «Словаре»): шапка принимает ряд
+        // тем же ChangeBounds'ом и с той же длительностью, что и прилёт.
+        window.sharedElementReenterTransition = ChangeBounds().apply {
+            duration = SlovarContract.FLIGHT_DURATION_MS
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -92,15 +98,18 @@ class MainActivity : AppCompatActivity() {
      * Пример 6: shared element через границу процесса в «Словарь». Источник —
      * ЯВНАЯ пара (view, transitionName) в ActivityOptions: в отличие от
      * фрагментов, где фреймворк выводит пару из диффа транзакции, здесь мы
-     * руками указываем, что летит. NEW_TASK — своя задача, две карточки в
-     * Recents: иллюзия совсем чужого приложения. Слой CROSS_APP off (или нет
-     * view-источника) — деградация: обычное открытие без options-бандла.
+     * руками указываем, что летит. NEW_TASK|CLEAR_TASK — своя задача и ВСЕГДА
+     * свежий запуск (живая задача поднималась бы вперёд без перехода —
+     * поймано кадрами как «магия есть через раз»); две карточки в Recents.
+     * Слой CROSS_APP off (или нет view-источника) — деградация: обычное
+     * открытие без options-бандла.
      */
-    fun openSlovar(word: String, sharedView: View?) {
+    fun openSlovar(word: String, sharedView: View?, greenRow: Boolean) {
         val intent = Intent()
             .setClassName(SlovarContract.PACKAGE, SlovarContract.ACTIVITY)
             .putExtra(SlovarContract.EXTRA_WORD, word)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(SlovarContract.EXTRA_GREEN, greenRow)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         try {
             val options =
                 if (sharedView != null && DemoConfig.isEnabled(DemoLayer.CROSS_APP)) {

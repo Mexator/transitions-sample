@@ -74,7 +74,10 @@ class WinFragment : Fragment(R.layout.fragment_win) {
 
         binding.btnWinMeaning.setOnClickListener { openArticle() }
         binding.btnWinSlovar.setOnClickListener {
-            (activity as? MainActivity)?.openSlovar(word, binding.winWordRow)
+            // greenRow = won: приёмник должен нарисовать ряд ТАКИМ ЖЕ, каким
+            // он улетает (см. SlovarContract.EXTRA_GREEN), — иначе на взлёте
+            // зелёный ряд молча подменяется серым.
+            (activity as? MainActivity)?.openSlovar(word, binding.winWordRow, won)
         }
         binding.btnWinRestart.setOnClickListener {
             (activity as? MainActivity)?.onPlayAgain()

@@ -19,8 +19,23 @@ object SlovarContract {
     const val ACTIVITY = "ru.mexator.slovar.ArticleActivity"
     const val EXTRA_WORD = "word"
 
+    /**
+     * Ряд-победитель: летящий элемент рисуется view ПРИЁМНИКА, поэтому приёмник
+     * должен знать, как выглядит источник, — иначе на взлёте зелёный ряд
+     * молча подменяется серым, и иллюзия «той же вьюшки» умирает на первом кадре.
+     */
+    const val EXTRA_GREEN = "green"
+
     /** transitionName shared by the word chip (game) and the article header («Словарь»). */
     const val TRANSITION_WORD = "word"
+
+    /**
+     * Длительность перелёта ряда. Живёт в контракте: у окна-отправителя и
+     * окна-приёмника она должна совпадать, иначе рука-off на границе процессов
+     * дёргается. Системный дефолт ~300 мс — не наловить кадров и не разглядеть
+     * «магию» на записи.
+     */
+    const val FLIGHT_DURATION_MS = 900L
 }
 
 object Dictionary {
