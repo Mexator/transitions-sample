@@ -322,7 +322,7 @@ class MainActivity : AppCompatActivity() {
                 if (state.status == GameStatus.WON) R.string.won else R.string.lost,
             )
             binding.wordChip.transitionName = SlovarContract.TRANSITION_WORD
-            binding.wordChip.text = state.target
+            binding.wordChip.setWord(state.target)
         }
         renderedRows = state.rows.size
     }

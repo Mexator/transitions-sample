@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -33,17 +34,18 @@
             android:textStyle="bold" />
 
         <!-- Shared element: flies to ArticleFragment header (Пример 5) and into
-             «Словарь» across the process boundary (Пример 6). transitionName is
-             set in code (SlovarContract.TRANSITION_WORD) so both sides share one constant. -->
-        <TextView
+             «Словарь» across the process boundary (Пример 6). Тот же ряд «клеток»,
+             что и заголовок «Словаря» — shared element летит ряд-в-ряд одинаковой
+             геометрии. transitionName is set in code (SlovarContract.TRANSITION_WORD). -->
+        <ru.mexator.core.dict.widget.BoardRowView
             android:id="@+id/word_chip"
-            android:layout_width="wrap_content"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="#EFEFEF"
-            android:padding="16dp"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+            app:boardColumns="5"
+            app:boardCellSize="52dp"
+            app:boardCellMargin="4dp"
+            app:boardCellTextSize="24sp" />
 
         <Button
             android:id="@+id/btn_meaning"
