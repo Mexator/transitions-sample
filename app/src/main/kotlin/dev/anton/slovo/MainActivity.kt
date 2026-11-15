@@ -104,8 +104,28 @@ class MainActivity : AppCompatActivity() {
     private fun showStartScene() {
         val views = SceneStartBinding.inflate(layoutInflater, binding.sceneRoot, false)
         startViews = views
+        buildMiniBoard(views)
+        buildKeyboard(views.keyboard, interactive = false)
         Scene(binding.sceneRoot, views.root).enter() // first show: no transition
         views.playButton.setOnClickListener { startGame() }
+    }
+
+    /** The start scene shows a small copy of the field — empty cells, same frame. */
+    private fun buildMiniBoard(views: SceneStartBinding) {
+        repeat(controller.state.maxAttempts) {
+            val row = linearRow()
+            repeat(controller.state.wordLength) {
+                row.addView(
+                    TextView(this).apply {
+                        layoutParams = LinearLayout.LayoutParams(0, dp(22), 1f).apply {
+                            setMargins(dp(2), dp(2), dp(2), dp(2))
+                        }
+                        setBackgroundColor(emptyColor)
+                    },
+                )
+            }
+            views.boardPreview.addView(row)
+        }
     }
 
     private fun startGame() {
@@ -131,7 +151,7 @@ class MainActivity : AppCompatActivity() {
         val views = SceneGameBinding.inflate(layoutInflater, binding.sceneRoot, false)
         gameViews = views
         buildBoard(views)
-        buildKeyboard(views)
+        buildKeyboard(views.keyboard, interactive = true)
         views.hintButton.setOnClickListener { toggleHint(views) }
 
         val scene = Scene(binding.sceneRoot, views.root)
@@ -171,26 +191,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun buildKeyboard(views: SceneGameBinding) {
-        keys.clear()
+    /**
+     * The keyboard exists in both scenes as a shared element. On the start scene
+     * the keys are inert copies (no game yet); on the game scene they are live
+     * and registered in [keys] for tinting.
+     */
+    private fun buildKeyboard(container: LinearLayout, interactive: Boolean) {
+        if (interactive) keys.clear()
         listOf("ЙЦУКЕНГШЩЗХЪ", "ФЫВАПРОЛДЖЭ").forEach { letters ->
             val row = linearRow()
             letters.forEach { c ->
-                val k = key(c.toString()) { controller.type(c) }
-                keys[c] = k
+                val k = key(c.toString()) { if (interactive) controller.type(c) }
+                if (interactive) keys[c] = k
                 row.addView(k)
             }
-            views.keyboard.addView(row)
+            container.addView(row)
         }
         val bottomRow = linearRow()
-        bottomRow.addView(key("⌫", 1.5f) { controller.backspace() })
+        bottomRow.addView(key("⌫", 1.5f) { if (interactive) controller.backspace() })
         "ЯЧСМИТЬБЮ".forEach { c ->
-            val k = key(c.toString()) { controller.type(c) }
-            keys[c] = k
+            val k = key(c.toString()) { if (interactive) controller.type(c) }
+            if (interactive) keys[c] = k
             bottomRow.addView(k)
         }
-        bottomRow.addView(key("⏎", 1.5f) { submitGuess() })
-        views.keyboard.addView(bottomRow)
+        bottomRow.addView(key("⏎", 1.5f) { if (interactive) submitGuess() })
+        container.addView(bottomRow)
     }
 
     private fun linearRow() = LinearLayout(this).apply {

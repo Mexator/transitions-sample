@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/app_name"
-        android:textSize="56sp"
+        android:textSize="48sp"
         android:textStyle="bold" />
 
     <TextView
@@ -22,14 +22,37 @@
         android:text="@string/subtitle"
         android:textSize="16sp" />
 
-    <!-- Shared element with the board in scene_game: the final board animates
-         FROM these bounds when TransitionManager#go swaps the scenes. -->
+    <!-- Shared element №1: a small copy of the field. transitionName="board"
+         matches the full board in scene_game, so the SAME-looking object is
+         seen growing from these bounds (Пример 2). -->
+    <LinearLayout
+        android:id="@+id/board_preview"
+        android:layout_width="190dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:background="#E8E8E8"
+        android:orientation="vertical"
+        android:padding="4dp"
+        android:transitionName="board" />
+
+    <!-- Shared element №2: the keyboard is present in BOTH scenes with the same
+         transitionName, so it docks smoothly instead of popping in. Keys are
+         built here too, but inert until the game starts. -->
+    <LinearLayout
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        android:transitionName="keyboard" />
+
     <Button
         android:id="@+id/play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
         android:text="@string/play"
-        android:textSize="18sp"
-        android:transitionName="board" />
+        android:textSize="18sp" />
 </LinearLayout>
