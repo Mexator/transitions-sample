@@ -3,6 +3,7 @@ package dev.anton.slovo
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
@@ -12,7 +13,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.transition.ChangeBounds
+import androidx.transition.Explode
+import androidx.transition.Fade
 import androidx.transition.Scene
+import androidx.transition.Slide
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
@@ -30,6 +34,8 @@ import dev.anton.slovo.game.Mark
 import dev.anton.slovo.game.SubmitResult
 import dev.anton.slovo.transition.CenteredChangeBounds
 import dev.anton.slovo.transition.ChangeColorTransition
+import dev.anton.slovo.transition.DemoTransitions
+import dev.anton.slovo.transition.requireTargetedVisibility
 
 /**
  * The game renders [GameState] into whichever scene is on screen. Scenes are
@@ -45,13 +51,21 @@ class MainActivity : AppCompatActivity() {
         const val COMMAND_SURRENDER = "surrender"
         const val COLOR_DURATION = 600L
         const val CONTAINER_DURATION = 900L
+        const val VISIBILITY_DURATION = 450L
+        const val EXPLODE_DURATION = 500L
 
-        /** transitionName of the field in scene_start ↔ scene_game. */
-        const val TRANSITION_BOARD = "board"
-
-        /** transitionName of the keyboard, present in both scenes. */
-        const val TRANSITION_KEYBOARD = "keyboard"
+        /** Pause between the two Explode passes of a restart (see explodeRestart). */
+        const val RESTART_GAP = 60L
     }
+
+    private val demoTimings
+        get() = DemoTransitions.Timings(
+            color = COLOR_DURATION,
+            container = CONTAINER_DURATION,
+            visibility = VISIBILITY_DURATION,
+            explode = EXPLODE_DURATION,
+            slowMo = DemoConfig.durationMultiplier,
+        )
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var controller: GameController
@@ -103,7 +117,13 @@ class MainActivity : AppCompatActivity() {
         when (intent?.getStringExtra(EXTRA_DEMO_COMMAND)) {
             COMMAND_START -> startGame()
             COMMAND_SURRENDER -> {
-                if (gameViews == null) startGame()
+                // A state jump, not a showcase: swap the scene WITHOUT a go()
+                // transition. Arming go() here and then immediately stacking a
+                // beginDelayedTransition in the same frame reliably left the
+                // finale VISIBLE in the hierarchy but never drawn (two pending
+                // pre-draw passes on sibling roots ate the unanimated flip).
+                if (gameViews == null) startGame(animated = false)
+                beginGameplayTransition()
                 controller.surrender()
             }
         }
@@ -136,14 +156,82 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startGame() {
-        val needScene = gameViews == null
-        controller.startNewGame(DemoConfig.wordOverride)
-        binding.finale.visibility = View.GONE
-        if (needScene) {
-            showGameScene(animated = DemoConfig.isEnabled(DemoLayer.CONTAINER))
+    private fun startGame(animated: Boolean = true) {
+        if (gameViews == null) {
+            controller.startNewGame(DemoConfig.wordOverride)
+            showGameScene(
+                animated = animated && DemoConfig.isEnabled(DemoLayer.CONTAINER),
+            )
+        } else if (DemoConfig.isEnabled(DemoLayer.VISIBILITY)) {
+            explodeRestart()
         } else {
-            render(controller.state)
+            controller.startNewGame(DemoConfig.wordOverride)
+        }
+    }
+
+    /**
+     * Пример 3: «Ещё раз» clears the board with Explode — a Visibility subclass.
+     * A single transition pass can't animate one view both disappearing and
+     * appearing, so this is the "intermediate scene" trick: pass 1 explodes the
+     * played rows out — they animate in the ViewOverlay, already GONE from the
+     * hierarchy — while the finale fades away and the keyboard slides back in;
+     * pass 2 explodes fresh empty rows in. The [RESTART_GAP] pause between the
+     * passes is the price of the trick.
+     */
+    private fun explodeRestart() {
+        val views = gameViews ?: return
+        val rows = (0 until views.board.childCount).map(views.board::getChildAt)
+
+        // Pass 1 — no render() on purpose: the exploding rows must keep their
+        // played colors in the overlay copy; the state resets only in pass 2.
+        // Explode is targeted at the rows only: an untargeted Visibility would
+        // also capture the keyboard/finale flips and fight the targeted Slide
+        // and Fade above (two animators summing translations on one view).
+        // requireTargetedVisibility() codifies that rule — it crashes loudly if
+        // a future edit reintroduces the mistake.
+        TransitionManager.beginDelayedTransition(
+            binding.root,
+            TransitionSet()
+                .addTransition(
+                    Slide(Gravity.BOTTOM).addTarget(R.id.keyboard).demoDuration(VISIBILITY_DURATION),
+                )
+                .addTransition(Fade(Fade.OUT).addTarget(R.id.finale).demoDuration(VISIBILITY_DURATION))
+                .addTransition(explodeFromBoard(views.board, rows).demoDuration(EXPLODE_DURATION))
+                .requireTargetedVisibility(),
+        )
+        rows.forEach { it.visibility = View.GONE }
+        binding.finale.visibility = View.GONE
+        views.keyboard.visibility = View.VISIBLE
+
+        binding.root.postDelayed(
+            {
+                // Pass 2: rows are still GONE, so this Explode catches their
+                // appear; startNewGame's render then fills them as empty cells.
+                if (gameViews == null) return@postDelayed
+                TransitionManager.beginDelayedTransition(
+                    binding.root,
+                    explodeFromBoard(views.board, rows).demoDuration(EXPLODE_DURATION),
+                )
+                rows.forEach { it.visibility = View.VISIBLE }
+                controller.startNewGame(DemoConfig.wordOverride)
+            },
+            (EXPLODE_DURATION * DemoConfig.durationMultiplier).toLong() + RESTART_GAP,
+        )
+    }
+
+    /**
+     * Explode with its epicenter at the board's center — rows radiate out of it.
+     * Targeted at exactly those rows so it never collides with the Slide/Fade
+     * children that own the keyboard and the finale.
+     */
+    private fun explodeFromBoard(board: LinearLayout, rows: List<View>): Explode {
+        val epicenter = Rect()
+        board.getGlobalVisibleRect(epicenter)
+        return Explode().apply {
+            rows.forEach(::addTarget)
+            setEpicenterCallback(object : Transition.EpicenterCallback() {
+                override fun onGetEpicenter(transition: Transition): Rect = epicenter
+            })
         }
     }
 
@@ -168,10 +256,10 @@ class MainActivity : AppCompatActivity() {
         if (animated) {
             TransitionManager.go(
                 scene,
-                TransitionSet()
-                    .addTransition(CenteredChangeBounds().addTarget(TRANSITION_BOARD))
-                    .addTransition(ChangeBounds().addTarget(TRANSITION_KEYBOARD))
-                    .demoDuration(CONTAINER_DURATION),
+                DemoTransitions.sceneSwap(
+                    visibilityOn = DemoConfig.isEnabled(DemoLayer.VISIBILITY),
+                    timings = demoTimings,
+                ),
             )
         } else {
             scene.enter()
@@ -265,6 +353,9 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun submitGuess() {
+        // Arm the transition set BEFORE submit(): submit dispatches render()
+        // synchronously, and those mutations become the transition's end scene.
+        beginGameplayTransition()
         when (controller.submit()) {
             SubmitResult.NotAWord ->
                 Toast.makeText(this, R.string.not_a_word, Toast.LENGTH_SHORT).show()
@@ -272,18 +363,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun render(state: GameState) {
-        // Пример 1: a freshly submitted row recolors cells and keyboard keys through
-        // a custom Transition. beginDelayedTransition captures current colors now;
-        // the mutations below become the transition's end scene.
-        val justSubmitted = state.rows.size > renderedRows
-        if (justSubmitted && DemoConfig.isEnabled(DemoLayer.COLOR)) {
-            TransitionManager.beginDelayedTransition(
-                binding.root,
-                ChangeColorTransition().demoDuration(COLOR_DURATION),
-            )
-        }
+    /**
+     * Пример 1 + Пример 3 armed in one pass, before a state change that may
+     * recolor cells and/or finish the game: the keyboard then slides out and the
+     * finale fades in. Each child no-ops unless its views actually change, so
+     * arming both layers unconditionally is safe — a rejected guess animates
+     * nothing.
+     */
+    private fun beginGameplayTransition() {
+        DemoTransitions.gameplay(
+            colorOn = DemoConfig.isEnabled(DemoLayer.COLOR),
+            visibilityOn = DemoConfig.isEnabled(DemoLayer.VISIBILITY),
+            timings = demoTimings,
+        )?.let { TransitionManager.beginDelayedTransition(binding.root, it) }
+    }
 
+    private fun render(state: GameState) {
+        // Pure view mutation — no transition calls live here. The CALLER decides
+        // which pass is animated (beginDelayedTransition before the state change,
+        // go() on a scene swap); Transitions interpolates from the values captured
+        // before the call to whatever this render leaves on screen.
         cells.forEachIndexed { rowIdx, rowCells ->
             val submitted = state.rows.getOrNull(rowIdx)
             val isCurrent = rowIdx == state.rows.size && state.status == GameStatus.PLAYING
@@ -317,6 +416,9 @@ class MainActivity : AppCompatActivity() {
         gameViews?.hintText?.text = Dictionary.articleOf(state.target)?.hint.orEmpty()
 
         val finished = state.status != GameStatus.PLAYING
+        // Пример 3: the keyboard's GONE/VISIBLE flip is what Slide animates; the
+        // finale's is what Fade animates (in whichever armed pass changed them).
+        gameViews?.keyboard?.visibility = if (finished) View.GONE else View.VISIBLE
         binding.finale.visibility = if (finished) View.VISIBLE else View.GONE
         if (finished) {
             binding.finaleTitle.setText(

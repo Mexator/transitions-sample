@@ -13,7 +13,10 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- title/subtitle get ids: Пример 3 targets them (by instance) so only these
+         fade out on the scene swap, while the matched board/keyboard stay solid. -->
     <TextView
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -22,6 +25,7 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
