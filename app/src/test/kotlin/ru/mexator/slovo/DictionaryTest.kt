@@ -24,6 +24,16 @@ class DictionaryTest {
     }
 
     @Test
+    fun `articles cover at least 50 words — enough variety for random games`() {
+        assertTrue("got ${Dictionary.articles.size}", Dictionary.articles.size >= 50)
+        // Каждое слово статей уникально — дубль сломал бы и randomWord, и панель
+        assertEquals(
+            Dictionary.articles.size,
+            Dictionary.articles.map { it.word }.toSet().size,
+        )
+    }
+
+    @Test
     fun `input is normalized, non-words are rejected`() {
         // isValid нормализует регистр — клавиатура и так печатает заглавными.
         assertTrue(Dictionary.isValid("кошка"))
