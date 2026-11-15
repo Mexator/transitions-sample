@@ -7,8 +7,6 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.transition.ChangeBounds
@@ -69,7 +67,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var controller: GameController
-    private val cells: MutableList<MutableList<TextView>> = mutableListOf()
     private var renderedRows = 0
 
     /** Scene views are re-inflated per scene swap — render() only touches live ones. */
@@ -130,27 +127,8 @@ class MainActivity : AppCompatActivity() {
     private fun showStartScene() {
         val views = SceneStartBinding.inflate(layoutInflater, binding.sceneRoot, false)
         startViews = views
-        buildMiniBoard(views)
         Scene(binding.sceneRoot, views.root).enter() // first show: no transition
         views.playButton.setOnClickListener { startGame() }
-    }
-
-    /** The start scene shows a small copy of the field — empty cells, same frame. */
-    private fun buildMiniBoard(views: SceneStartBinding) {
-        repeat(controller.state.maxAttempts) {
-            val row = linearRow()
-            repeat(controller.state.wordLength) {
-                row.addView(
-                    TextView(this).apply {
-                        layoutParams = LinearLayout.LayoutParams(0, dp(22), 1f).apply {
-                            setMargins(dp(2), dp(2), dp(2), dp(2))
-                        }
-                        setBackgroundColor(emptyColor)
-                    },
-                )
-            }
-            views.boardPreview.addView(row)
-        }
     }
 
     private fun startGame(animated: Boolean = true) {
@@ -177,7 +155,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun explodeRestart() {
         val views = gameViews ?: return
-        val rows = (0 until views.board.childCount).map(views.board::getChildAt)
+        val rows: List<View> = views.board.rows.toList()
 
         // Pass 1 — no render() on purpose: the exploding rows must keep their
         // played colors in the overlay copy; the state resets only in pass 2.
@@ -221,7 +199,7 @@ class MainActivity : AppCompatActivity() {
      * Targeted at exactly those rows so it never collides with the Slide/Fade
      * children that own the keyboard and the finale.
      */
-    private fun explodeFromBoard(board: LinearLayout, rows: List<View>): Explode {
+    private fun explodeFromBoard(board: View, rows: List<View>): Explode {
         val epicenter = Rect()
         board.getGlobalVisibleRect(epicenter)
         return Explode().apply {
@@ -245,7 +223,6 @@ class MainActivity : AppCompatActivity() {
     private fun showGameScene(animated: Boolean) {
         val views = SceneGameBinding.inflate(layoutInflater, binding.sceneRoot, false)
         gameViews = views
-        buildBoard(views)
         views.keyboard.onKey = { key ->
             when (key) {
                 is KeyboardView.Key.Letter -> controller.type(key.char)
@@ -271,42 +248,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** Cells are created once per game and updated in place — the substrate Transitions API needs. */
-    private fun buildBoard(views: SceneGameBinding) {
-        cells.clear()
-        repeat(controller.state.maxAttempts) {
-            val row = LinearLayout(this).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                )
-                orientation = LinearLayout.HORIZONTAL
-            }
-            val rowCells = mutableListOf<TextView>()
-            repeat(controller.state.wordLength) {
-                val cell = TextView(this).apply {
-                    layoutParams = LinearLayout.LayoutParams(0, dp(52), 1f).apply {
-                        setMargins(dp(3), dp(3), dp(3), dp(3))
-                    }
-                    gravity = Gravity.CENTER
-                    textSize = 22f
-                }
-                rowCells += cell
-                row.addView(cell)
-            }
-            cells += rowCells
-            views.board.addView(row)
-        }
-    }
-
-    /** Horizontal row for the board/mini-board grid (the keyboard builds its own). */
-    private fun linearRow() = LinearLayout(this).apply {
-        layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-        )
-        orientation = LinearLayout.HORIZONTAL
-    }
-
     private fun submitGuess() {
         // Arm the transition set BEFORE submit(): submit dispatches render()
         // synchronously, and those mutations become the transition's end scene.
@@ -338,17 +279,18 @@ class MainActivity : AppCompatActivity() {
         // which pass is animated (beginDelayedTransition before the state change,
         // go() on a scene swap); Transitions interpolates from the values captured
         // before the call to whatever this render leaves on screen.
-        cells.forEachIndexed { rowIdx, rowCells ->
+        gameViews?.board?.rows?.forEachIndexed { rowIdx, row ->
             val submitted = state.rows.getOrNull(rowIdx)
             val isCurrent = rowIdx == state.rows.size && state.status == GameStatus.PLAYING
-            rowCells.forEachIndexed { colIdx, cell ->
+            for (colIdx in 0 until row.columns) {
                 val letter = when {
                     submitted != null -> submitted.word.getOrNull(colIdx)
                     isCurrent -> state.currentInput.getOrNull(colIdx)
                     else -> null
                 }
-                cell.text = letter?.toString().orEmpty()
-                cell.setBackgroundColor(
+                row.setLetter(colIdx, letter)
+                row.setColor(
+                    colIdx,
                     if (submitted != null) {
                         when (submitted.marks[colIdx]) {
                             Mark.CORRECT -> correctColor
@@ -445,6 +387,4 @@ class MainActivity : AppCompatActivity() {
     private fun Transition.demoDuration(base: Long): Transition = apply {
         duration = (base * DemoConfig.durationMultiplier).toLong()
     }
-
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }

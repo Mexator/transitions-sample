@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -33,19 +34,24 @@
         android:text="@string/subtitle"
         android:textSize="16sp" />
 
-    <!-- Shared element №1: a small copy of the field. transitionName="board"
-         matches the full board in scene_game; CenteredChangeBounds grows the
-         final board out of these bounds around their center (Пример 2). -->
-    <LinearLayout
+    <!-- Shared element №1: a small copy of the field — the same BoardView with
+         smaller cells. transitionName="board" matches the full board in
+         scene_game; CenteredChangeBounds grows the final board out of these
+         bounds around their center (Пример 2). -->
+    <dev.anton.core.dict.widget.BoardView
         android:id="@+id/board_preview"
         android:layout_width="190dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="24dp"
         android:background="#E8E8E8"
-        android:orientation="vertical"
         android:padding="4dp"
-        android:transitionName="board" />
+        android:transitionName="board"
+        app:boardRows="6"
+        app:boardColumns="5"
+        app:boardCellSize="22dp"
+        app:boardCellMargin="2dp"
+        app:boardCellTextSize="10sp" />
 
     <Button
         android:id="@+id/play_button"

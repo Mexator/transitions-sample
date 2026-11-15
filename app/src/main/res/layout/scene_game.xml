@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -15,16 +16,21 @@
     <!-- Shared element with the mini field in scene_start (transitionName="board").
          The FRAME is the shared element; CenteredChangeBounds replays the mini
          field's bounds onto it with scale + translation around the center, so the
-         cells inside scale along with the frame instead of being clipped. -->
-    <LinearLayout
+         cells inside scale along with the frame instead of being clipped.
+         Rows are BoardRowView instances — exactly what the restart Explode targets. -->
+    <dev.anton.core.dict.widget.BoardView
         android:id="@+id/board"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:background="#E8E8E8"
-        android:orientation="vertical"
         android:padding="4dp"
-        android:transitionName="board" />
+        android:transitionName="board"
+        app:boardRows="6"
+        app:boardColumns="5"
+        app:boardCellSize="52dp"
+        app:boardCellMargin="3dp"
+        app:boardCellTextSize="22sp" />
 
     <Button
         android:id="@+id/hint_button"

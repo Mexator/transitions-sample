@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared board views (BoardView / BoardRowView), used by «Слово» and
+         «Словарь» alike. boardCellSize is the cell HEIGHT — cells stretch
+         horizontally by weight inside a row. -->
+    <attr name="boardRows" format="integer" />
+    <attr name="boardColumns" format="integer" />
+    <attr name="boardCellSize" format="dimension" />
+    <attr name="boardCellMargin" format="dimension" />
+    <attr name="boardCellTextSize" format="dimension" />
+    <attr name="boardCellColor" format="color" />
+
+    <declare-styleable name="BoardView">
+        <attr name="boardRows" />
+        <attr name="boardColumns" />
+        <attr name="boardCellSize" />
+        <attr name="boardCellMargin" />
+        <attr name="boardCellTextSize" />
+        <attr name="boardCellColor" />
+    </declare-styleable>
+
+    <declare-styleable name="BoardRowView">
+        <attr name="boardColumns" />
+        <attr name="boardCellSize" />
+        <attr name="boardCellMargin" />
+        <attr name="boardCellTextSize" />
+        <attr name="boardCellColor" />
+    </declare-styleable>
+</resources>
